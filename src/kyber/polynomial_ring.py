@@ -1,26 +1,33 @@
 import numpy as np
+from scipy.linalg import circulant
+
+
+def anti_circulant(x) -> np.ndarray:
+    """
+    Generate the anti-circulant matrix for the given vector.
+
+    See Section 5.1 in the following document:
+    https://cryptography101.ca/wp-content/uploads/lattice-based-cryptography.pdf
+    """
+    n = len(x)
+    mask = np.ones((n, n)) - 2 * np.triu(np.ones((n, n)), k=1)
+    return circulant(x) * mask
 
 
 class PolynomialRing:
 
-    def __init__(self, q: int, n: int, x: np.ndarray):
+    def __init__(self, q: int, n: int, coef: np.ndarray):
         """
         :param q: Maximum value for polynomial coefficient.
         :param n: Degree of reduction polynomial.
-        :param x: Polynomial coefficients in order of ascending degree.
+        :param coef: Polynomial coefficients in order of ascending degree.
         """
-        if len(x) != n:
+        if len(coef) != n:
             raise ValueError("Polynomial coefficients must have length n.")
 
         self.q = q
         self.n = n
-        self.x = x
-
-    def _reduction_polynomial_coefficients(self) -> np.ndarray:
-        coeffs = np.zeros(self.n + 1)
-        coeffs[0] = 1
-        coeffs[self.n] = 1
-        return coeffs
+        self.coef = coef
 
     def _check_compatibility(self, other: "PolynomialRing"):
         if self.q != other.q:
@@ -31,34 +38,26 @@ class PolynomialRing:
     def __mul__(self, other: "PolynomialRing") -> "PolynomialRing":
         self._check_compatibility(other)
 
-        f = np.polynomial.Polynomial(self.x)
-        g = np.polynomial.Polynomial(other.x)
+        a = anti_circulant(self.coef)
+        b = other.coef.reshape((self.n, 1))
 
-        reduction_polynomial = np.polynomial.Polynomial(
-            self._reduction_polynomial_coefficients()
-        )
+        c = np.matmul(a, b).reshape((self.n,))
+        c = np.mod(c, self.q)
 
-        h = f * g
-        h = np.polynomial.Polynomial(np.mod(h.coef, self.q))
-        r = h % reduction_polynomial
-
-        x = r.coef
-        x = np.mod(x, self.q)
-
-        return PolynomialRing(q=self.q, n=self.n, x=x)
+        return PolynomialRing(q=self.q, n=self.n, coef=c)
 
     def __add__(self, other: "PolynomialRing") -> "PolynomialRing":
         self._check_compatibility(other)
 
-        x = self.x + other.x
+        x = self.coef + other.coef
         x = np.mod(x, self.q)
 
-        return PolynomialRing(q=self.q, n=self.n, x=x)
+        return PolynomialRing(q=self.q, n=self.n, coef=x)
 
     def __sub__(self, other: "PolynomialRing") -> "PolynomialRing":
         self._check_compatibility(other)
 
-        x = self.x - other.x
+        x = self.coef - other.coef
         x = np.mod(x, self.q)
 
-        return PolynomialRing(q=self.q, n=self.n, x=x)
+        return PolynomialRing(q=self.q, n=self.n, coef=x)

@@ -2,7 +2,19 @@ import unittest
 
 import numpy as np
 
-from kyber.polynomial_ring import PolynomialRing
+from kyber.polynomial_ring import PolynomialRing, anti_circulant
+
+
+class TestAntiCirculant(unittest.TestCase):
+
+    def test(self):
+        a_actual = anti_circulant(np.array([1, 2, 3]))
+        a_expected = np.array([
+            [1, -3, -2],
+            [2, 1, -3],
+            [3, 2, 1],
+        ])
+        np.testing.assert_array_equal(a_actual, a_expected)
 
 
 class TestPolynomialRing(unittest.TestCase):
@@ -12,18 +24,18 @@ class TestPolynomialRing(unittest.TestCase):
     def test_multiplication(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, x=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, x=np.array([2, 17, 39, 14]))
+        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = PolynomialRing(q=q, n=n, coef=np.array([2, 17, 39, 14]))
 
         h = f * g
 
         self.assertEqual(q, h.q)
         self.assertEqual(n, h.n)
-        np.testing.assert_array_equal(np.array([19, 3, 10, 21]), h.x)
+        np.testing.assert_array_equal(np.array([19, 3, 10, 21]), h.coef)
 
     def test_multiplication_incompatible(self):
-        f = PolynomialRing(q=43, n=4, x=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=47, n=4, x=np.array([2, 17, 39, 14]))
+        f = PolynomialRing(q=43, n=4, coef=np.array([33, 41, 0, 12]))
+        g = PolynomialRing(q=47, n=4, coef=np.array([2, 17, 39, 14]))
 
         with self.assertRaises(ValueError):
             f * g
@@ -31,26 +43,26 @@ class TestPolynomialRing(unittest.TestCase):
     def test_addition(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, x=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, x=np.array([2, 17, 39, 14]))
+        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = PolynomialRing(q=q, n=n, coef=np.array([2, 17, 39, 14]))
 
         h = f + g
 
         self.assertEqual(q, h.q)
         self.assertEqual(n, h.n)
-        np.testing.assert_array_equal(np.array([35, 15, 39, 26]), h.x)
+        np.testing.assert_array_equal(np.array([35, 15, 39, 26]), h.coef)
 
     def test_subtraction(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, x=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, x=np.array([2, 17, 39, 14]))
+        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = PolynomialRing(q=q, n=n, coef=np.array([2, 17, 39, 14]))
 
         h = f - g
 
         self.assertEqual(q, h.q)
         self.assertEqual(n, h.n)
-        np.testing.assert_array_equal(np.array([31, 24, 4, 41]), h.x)
+        np.testing.assert_array_equal(np.array([31, 24, 4, 41]), h.coef)
 
 
 if __name__ == '__main__':
