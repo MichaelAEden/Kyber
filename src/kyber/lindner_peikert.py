@@ -42,8 +42,8 @@ class LindnerPeikert:
 
         u = np.matmul(self.A.transpose(), r) + e1
         u = np.mod(u, self.q)
-        # TODO: what rounding method to use?
-        v = np.matmul(self.b.transpose(), r) + e2 + np.round(self.q / 2) * x
+        # Use ceil instead of round such that ties are broken upwards.
+        v = np.matmul(self.b.transpose(), r) + e2 + np.ceil(self.q / 2) * x
         v = np.mod(v, self.q)
 
         assert(u.shape == (self.n, 1))
