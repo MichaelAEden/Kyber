@@ -2,9 +2,9 @@ import unittest
 
 import numpy as np
 
-from kyber.kyber import Kyber
-from kyber.matrix import Matrix
-from kyber.polynomial_ring import PolynomialRing
+from encryption.kyber import Kyber
+from math_.matrix import Matrix
+from math_.polynomial_ring import PolynomialRing
 
 
 class TestKyber(unittest.TestCase):
@@ -22,12 +22,11 @@ class TestKyber(unittest.TestCase):
             nu2=3,
             seed=2026,
         )
-        u, v = kyber.encrypt(x=PolynomialRing(q=q, n=n, coef=x))
+        u, v = kyber.encrypt(x)
         x_decrypted = kyber.decrypt(u, v)
 
         self.assertEqual((3,), x_decrypted.shape)
         np.testing.assert_array_equal(x_decrypted, x)
-
 
     def test_fixed_values(self):
         # See Example 6.2 in the following document:
@@ -77,7 +76,7 @@ class TestKyber(unittest.TestCase):
             ),
         )
         u, v = kyber.encrypt(
-            x=PolynomialRing(q=q, n=n, coef=x),
+            x=x,
             r=Matrix.vector(
                 (
                     PolynomialRing(q=q, n=n, coef=np.array([-2, -2, 1])),

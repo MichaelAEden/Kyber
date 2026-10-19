@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from kyber.matrix import Matrix
+from math_.matrix import Matrix
 
 
 class TestMatrix(unittest.TestCase):

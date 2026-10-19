@@ -1,17 +1,11 @@
 import numpy as np
 
-
-def modular_rounding(x: np.ndarray, q: int) -> np.ndarray:
-    """
-    Round x to 0 if x < q/4 or x > 3q/4, round x to 1 otherwise.
-    """
-    x = np.mod(x, q)
-    return ((x > q // 4) & (x <= 3 * q // 4)).astype(int)
+from math_.modulo import modular_rounding
 
 
 class LindnerPeikert:
     """
-    Implements Lindner-Peikert encryption scheme.
+    Implements Lindner-Peikert public-key encryption scheme.
 
     See Section 4.2 in the following document:
     https://cryptography101.ca/wp-content/uploads/lattice-based-cryptography.pdf
@@ -45,9 +39,6 @@ class LindnerPeikert:
         # Use ceil instead of round such that ties are broken upwards.
         v = np.matmul(self.b.transpose(), r) + e2 + np.ceil(self.q / 2) * x
         v = np.mod(v, self.q)
-
-        assert(u.shape == (self.n, 1))
-        assert(v.shape == (1, len(x)))
 
         return u, v
 

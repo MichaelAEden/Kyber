@@ -1,5 +1,4 @@
 import functools
-import itertools
 import operator
 from typing import TypeVar, Generic, Callable
 

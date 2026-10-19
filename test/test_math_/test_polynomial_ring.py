@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from kyber.polynomial_ring import PolynomialRing, anti_circulant
+from math_.polynomial_ring import PolynomialRing, anti_circulant
 
 
 class TestAntiCirculant(unittest.TestCase):
