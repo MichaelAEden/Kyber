@@ -64,6 +64,18 @@ class TestPolynomialRing(unittest.TestCase):
         self.assertEqual(n, h.n)
         np.testing.assert_array_equal(np.array([31, 24, 4, 41]), h.coef)
 
+    def test_equal(self):
+        q = 43
+        n = 4
+        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
 
-if __name__ == '__main__':
-    unittest.main()
+        self.assertEqual(f, g)
+
+    def test_not_equal(self):
+        q = 43
+        n = 4
+        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 0]))
+
+        self.assertNotEqual(f, g)

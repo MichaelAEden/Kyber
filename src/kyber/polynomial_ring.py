@@ -2,7 +2,7 @@ import numpy as np
 from scipy.linalg import circulant
 
 
-def anti_circulant(x) -> np.ndarray:
+def anti_circulant(x: np.ndarray) -> np.ndarray:
     """
     Generate the anti-circulant matrix for the given vector.
 
@@ -35,10 +35,17 @@ class PolynomialRing:
         if self.n != other.n:
             raise ValueError("Polynomials must have same n.")
 
+    def __eq__(self, other: "PolynomialRing") -> bool:
+        return (
+            self.q == other.q
+            and self.n == other.n
+            and np.array_equal(self.coef, other.coef)
+        )
+
     def __mul__(self, other: "PolynomialRing") -> "PolynomialRing":
         self._check_compatibility(other)
 
-        a = anti_circulant(self.coef)
+        a = np.mod(anti_circulant(self.coef), self.q)
         b = other.coef.reshape((self.n, 1))
 
         c = np.matmul(a, b).reshape((self.n,))
