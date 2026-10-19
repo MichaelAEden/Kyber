@@ -11,7 +11,16 @@ class LindnerPeikert:
     https://cryptography101.ca/wp-content/uploads/lattice-based-cryptography.pdf
     """
 
-    def __init__(self, n: int, q: int, B: int, A: np.ndarray = None, s: np.ndarray = None, e: np.ndarray = None, seed: int = None):
+    def __init__(
+        self,
+        n: int,
+        q: int,
+        B: int,
+        A: np.ndarray = None,
+        s: np.ndarray = None,
+        e: np.ndarray = None,
+        seed: int = None,
+    ):
         self.rng = np.random.default_rng(seed)
 
         # Parameters: n, B, q
@@ -29,10 +38,28 @@ class LindnerPeikert:
         b = np.mod(b, q)
         self.b = b
 
-    def encrypt(self, x: np.ndarray, r: np.ndarray = None, e1: np.ndarray = None, e2: np.ndarray = None) -> tuple[np.ndarray, np.ndarray]:
-        r = r if r is not None else self.rng.integers(low=-self.B, high=self.B, size=(self.n, 1))
-        e1 = e1 if e1 is not None else self.rng.integers(low=-self.B, high=self.B, size=(self.n, 1))
-        e2 = e2 if e2 is not None else self.rng.integers(low=-self.B, high=self.B, size=(1, 1))
+    def encrypt(
+        self,
+        x: np.ndarray,
+        r: np.ndarray = None,
+        e1: np.ndarray = None,
+        e2: np.ndarray = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        r = (
+            r
+            if r is not None
+            else self.rng.integers(low=-self.B, high=self.B, size=(self.n, 1))
+        )
+        e1 = (
+            e1
+            if e1 is not None
+            else self.rng.integers(low=-self.B, high=self.B, size=(self.n, 1))
+        )
+        e2 = (
+            e2
+            if e2 is not None
+            else self.rng.integers(low=-self.B, high=self.B, size=(1, 1))
+        )
 
         u = np.matmul(self.A.transpose(), r) + e1
         u = np.mod(u, self.q)

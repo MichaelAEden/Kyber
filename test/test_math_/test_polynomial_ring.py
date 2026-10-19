@@ -9,11 +9,13 @@ class TestAntiCirculant(unittest.TestCase):
 
     def test(self):
         a_actual = anti_circulant(np.array([1, 2, 3]))
-        a_expected = np.array([
-            [1, -3, -2],
-            [2, 1, -3],
-            [3, 2, 1],
-        ])
+        a_expected = np.array(
+            [
+                [1, -3, -2],
+                [2, 1, -3],
+                [3, 2, 1],
+            ]
+        )
         np.testing.assert_array_equal(a_actual, a_expected)
 
 

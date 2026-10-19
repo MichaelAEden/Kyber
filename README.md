@@ -6,7 +6,7 @@ Python implementation of ML-KEM (Kyber) and other encryption schemes.
 
 This project uses [`uv`](https://docs.astral.sh/uv/) for package management.
 
-To get started, install [`uv`](https://docs.astral.sh/uv/#installation) and run `uv sync` from the project root. 
+To get started, install [`uv`](https://docs.astral.sh/uv/#installation) and run `uv sync` from the project root.
 
 ## References
 

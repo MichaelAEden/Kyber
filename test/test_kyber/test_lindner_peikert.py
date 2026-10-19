@@ -30,12 +30,14 @@ class TestLindnerPeikert(unittest.TestCase):
             n=4,
             q=997,
             B=5,
-            A=np.array([
-                [301, 352, 400, 269],
-                [585, 916, 438, 560],
-                [510, 108, 14, 157],
-                [265, 620, 886, 348],
-            ]),
+            A=np.array(
+                [
+                    [301, 352, 400, 269],
+                    [585, 916, 438, 560],
+                    [510, 108, 14, 157],
+                    [265, 620, 886, 348],
+                ]
+            ),
             s=np.array([2, 3, -5, 1]).reshape((4, 1)),
             e=np.array([4, 5, 0, 1]).reshape((4, 1)),
         )
@@ -49,6 +51,8 @@ class TestLindnerPeikert(unittest.TestCase):
 
         self.assertEqual((1,), x_decrypted.shape)
         np.testing.assert_array_equal(x_decrypted, np.array([0]))
-        np.testing.assert_array_equal(lp.b, np.array([928, 299, 434, 303]).reshape((4, 1)))
+        np.testing.assert_array_equal(
+            lp.b, np.array([928, 299, 434, 303]).reshape((4, 1))
+        )
         np.testing.assert_array_equal(u, np.array([50, 509, 88, 384]).reshape((4, 1)))
         np.testing.assert_array_equal(v, np.array([525]).reshape((1, 1)))

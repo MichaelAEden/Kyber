@@ -2,7 +2,8 @@ import functools
 import operator
 from typing import TypeVar, Generic, Callable
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class Matrix(Generic[T]):
 
@@ -47,13 +48,16 @@ class Matrix(Generic[T]):
                 self[i, j] != other[i, j]
                 for i in range(self._row_count)
                 for j in range(self._col_count)
-            ) == 0
+            )
+            == 0
         )
 
     def __getitem__(self, subscript: tuple[int, int]) -> T:
         row, col = subscript
         if row > self._row_count or col > self._col_count:
-            raise IndexError(f"Index ({row}, {col}) out of range for matrix of size: {self.shape}")
+            raise IndexError(
+                f"Index ({row}, {col}) out of range for matrix of size: {self.shape}"
+            )
 
         if self._row_major_order:
             return self._data[row][col]
@@ -71,17 +75,23 @@ class Matrix(Generic[T]):
 
     def __add__(self, other: "Matrix[T]") -> "Matrix[T]":
         if self.shape != other.shape:
-            raise ValueError(f"Cannot add matrices of different sizes: {self.shape}, {other.shape}.")
+            raise ValueError(
+                f"Cannot add matrices of different sizes: {self.shape}, {other.shape}."
+            )
         return self._element_wise_operation(other, fn=lambda x, y: x + y)
 
     def __sub__(self, other: "Matrix[T]") -> "Matrix[T]":
         if self.shape != other.shape:
-            raise ValueError(f"Cannot subtract matrices of different sizes: {self.shape}, {other.shape}.")
+            raise ValueError(
+                f"Cannot subtract matrices of different sizes: {self.shape}, {other.shape}."
+            )
         return self._element_wise_operation(other, fn=lambda x, y: x - y)
 
     def __mul__(self, other: "Matrix[T]") -> "Matrix[T]":
         if self._col_count != other._row_count:
-            raise ValueError(f"Cannot multiply matrices with incompatible sizes: {self.shape}, {other.shape}.")
+            raise ValueError(
+                f"Cannot multiply matrices with incompatible sizes: {self.shape}, {other.shape}."
+            )
 
         output_rows = []
         for row_i in range(self._row_count):
@@ -89,7 +99,7 @@ class Matrix(Generic[T]):
             for col_i in range(other._col_count):
                 dot_product = functools.reduce(
                     operator.add,
-                    (self[row_i, i] * other[i, col_i] for i in range(self._col_count))
+                    (self[row_i, i] * other[i, col_i] for i in range(self._col_count)),
                 )
                 output_row.append(dot_product)
             output_rows.append(tuple(output_row))

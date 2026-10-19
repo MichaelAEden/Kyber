@@ -7,7 +7,9 @@ from math_.matrix import Matrix
 from math_.polynomial_ring import PolynomialRing
 
 
-def _random_polynomial(q: int, n: int, max_coef: int, rng: np.random.Generator) -> PolynomialRing:
+def _random_polynomial(
+    q: int, n: int, max_coef: int, rng: np.random.Generator
+) -> PolynomialRing:
     coef = rng.integers(low=0, high=max_coef, size=n)
     return PolynomialRing(q=q, n=n, coef=coef)
 
@@ -19,17 +21,17 @@ def _random_matrix(row_count: int, col_count: int, fn: Callable) -> Matrix:
 
 
 def _random_polynomial_matrix(
-        q: int,
-        n: int,
-        max_coef: int,
-        row_count: int,
-        col_count: int,
-        rng: np.random.Generator,
+    q: int,
+    n: int,
+    max_coef: int,
+    row_count: int,
+    col_count: int,
+    rng: np.random.Generator,
 ) -> Matrix[PolynomialRing]:
     return _random_matrix(
         row_count=row_count,
         col_count=col_count,
-        fn=lambda: _random_polynomial(q, n, max_coef, rng)
+        fn=lambda: _random_polynomial(q, n, max_coef, rng),
     )
 
 
@@ -51,7 +53,7 @@ class Kyber:
         A: Matrix[PolynomialRing] = None,
         s: Matrix[PolynomialRing] = None,
         e: Matrix[PolynomialRing] = None,
-        seed: int = None
+        seed: int = None,
     ):
         """
         :param n: Degree of reduction polynomial.
@@ -71,11 +73,44 @@ class Kyber:
         self.nu2 = nu2
 
         # Public key: (A, s)
-        self.A = A if A is not None else _random_polynomial_matrix(q=self.q, n=self.n, max_coef=self.q, row_count=self.k, col_count=self.k, rng=self.rng)
-        self.s = s if s is not None else _random_polynomial_matrix(q=self.q, n=self.n, max_coef=self.nu1, row_count=self.k, col_count=1, rng=self.rng)
+        self.A = (
+            A
+            if A is not None
+            else _random_polynomial_matrix(
+                q=self.q,
+                n=self.n,
+                max_coef=self.q,
+                row_count=self.k,
+                col_count=self.k,
+                rng=self.rng,
+            )
+        )
+        self.s = (
+            s
+            if s is not None
+            else _random_polynomial_matrix(
+                q=self.q,
+                n=self.n,
+                max_coef=self.nu1,
+                row_count=self.k,
+                col_count=1,
+                rng=self.rng,
+            )
+        )
 
         # Private key: t
-        e = e if e is not None else _random_polynomial_matrix(q=self.q, n=self.n, max_coef=self.nu1, row_count=self.k, col_count=1, rng=self.rng)
+        e = (
+            e
+            if e is not None
+            else _random_polynomial_matrix(
+                q=self.q,
+                n=self.n,
+                max_coef=self.nu1,
+                row_count=self.k,
+                col_count=1,
+                rng=self.rng,
+            )
+        )
         t = self.A * self.s + e
         self.t = t
 
@@ -84,16 +119,50 @@ class Kyber:
         x: np.ndarray,
         r: Matrix[PolynomialRing] = None,
         e1: Matrix[PolynomialRing] = None,
-        e2: Matrix[PolynomialRing] = None
+        e2: Matrix[PolynomialRing] = None,
     ) -> tuple[Matrix[PolynomialRing], Matrix[PolynomialRing]]:
-        r = r if r is not None else _random_polynomial_matrix(q=self.q, n=self.n, max_coef=self.nu1, row_count=self.k, col_count=1, rng=self.rng)
-        e1 = e1 if e1 is not None else _random_polynomial_matrix(q=self.q, n=self.n, max_coef=self.nu2, row_count=self.k, col_count=1, rng=self.rng)
-        e2 = e2 if e2 is not None else _random_polynomial_matrix(q=self.q, n=self.n, max_coef=self.nu2, row_count=1, col_count=1, rng=self.rng)
+        r = (
+            r
+            if r is not None
+            else _random_polynomial_matrix(
+                q=self.q,
+                n=self.n,
+                max_coef=self.nu1,
+                row_count=self.k,
+                col_count=1,
+                rng=self.rng,
+            )
+        )
+        e1 = (
+            e1
+            if e1 is not None
+            else _random_polynomial_matrix(
+                q=self.q,
+                n=self.n,
+                max_coef=self.nu2,
+                row_count=self.k,
+                col_count=1,
+                rng=self.rng,
+            )
+        )
+        e2 = (
+            e2
+            if e2 is not None
+            else _random_polynomial_matrix(
+                q=self.q,
+                n=self.n,
+                max_coef=self.nu2,
+                row_count=1,
+                col_count=1,
+                rng=self.rng,
+            )
+        )
 
         u = self.A.transpose * r + e1
         # Use ceil instead of round such that ties are broken upwards.
         v = (
-            self.t.transpose * r + e2
+            self.t.transpose * r
+            + e2
             + Matrix.scalar(
                 PolynomialRing(q=self.q, n=self.n, coef=np.ceil(self.q / 2) * x)
             )
@@ -101,6 +170,8 @@ class Kyber:
 
         return u, v
 
-    def decrypt(self, u: Matrix[PolynomialRing], v: Matrix[PolynomialRing]) -> np.ndarray:
+    def decrypt(
+        self, u: Matrix[PolynomialRing], v: Matrix[PolynomialRing]
+    ) -> np.ndarray:
         x = modular_rounding((v - self.s.transpose * u)[0, 0].coef, q=self.q)
         return x.flatten()
