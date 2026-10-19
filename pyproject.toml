@@ -1,7 +1,7 @@
 [project]
-name = "kyber"
+name = "encryption"
 version = "0.1.0"
-description = "Add your description here"
+description = "Python implementation of ML-KEM (Kyber) and other encryption schemes."
 readme = "README.md"
 authors = [
     { name = "Michael Eden", email = "michael.eden100@gmail.com" }
