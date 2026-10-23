@@ -43,6 +43,8 @@ class Kyber:
     https://cryptography101.ca/wp-content/uploads/lattice-based-cryptography.pdf
     """
 
+    # TODO: is cyphertext compression lossy or does it only increase decryption error rate?
+
     def __init__(
         self,
         n: int,
@@ -72,7 +74,8 @@ class Kyber:
         self.nu1 = nu1
         self.nu2 = nu2
 
-        # Public key: (A, s)
+        # Public key: (A, t)
+        # Private key: s
         self.A = (
             A
             if A is not None
@@ -97,8 +100,6 @@ class Kyber:
                 rng=self.rng,
             )
         )
-
-        # Private key: t
         e = (
             e
             if e is not None
