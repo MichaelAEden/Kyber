@@ -2,19 +2,19 @@ import unittest
 
 import numpy as np
 
-from encryption.kyber import Kyber
+from encryption.kyber_pke import KyberPKE
 from math_.matrix import Matrix
 from math_.polynomial_ring import PolynomialRing
 
 
-class TestKyber(unittest.TestCase):
+class TestKyberPKE(unittest.TestCase):
 
     def test_random_values(self):
-        x = np.array([1, 1, 0])
+        m = np.array([1, 1, 0])
 
         q = 991
         n = 3
-        kyber = Kyber(
+        kyber = KyberPKE(
             n=n,
             q=q,
             k=3,
@@ -22,20 +22,20 @@ class TestKyber(unittest.TestCase):
             nu2=3,
             seed=2026,
         )
-        u, v = kyber.encrypt(x)
-        x_decrypted = kyber.decrypt(u, v)
+        c = kyber.encrypt(m, seed=2027)
+        m_decrypted = kyber.decrypt(c)
 
-        self.assertEqual((3,), x_decrypted.shape)
-        np.testing.assert_array_equal(x_decrypted, x)
+        self.assertEqual((3,), m_decrypted.shape)
+        np.testing.assert_array_equal(m_decrypted, m)
 
     def test_fixed_values(self):
         # See Example 6.2 in the following document:
         # https://cryptography101.ca/wp-content/uploads/lattice-based-cryptography.pdf
-        x = np.array([1, 1, 0])
+        m = np.array([1, 1, 0])
 
         q = 991
         n = 3
-        kyber = Kyber(
+        kyber = KyberPKE(
             n=n,
             q=q,
             k=3,
@@ -77,8 +77,8 @@ class TestKyber(unittest.TestCase):
                 row_vector=False,
             ),
         )
-        u, v = kyber.encrypt(
-            x=x,
+        c = kyber.encrypt(
+            m=m,
             r=Matrix.vector(
                 (
                     PolynomialRing(q=q, n=n, coef=np.array([-2, -2, 1])),
@@ -97,9 +97,9 @@ class TestKyber(unittest.TestCase):
             ),
             e2=Matrix.scalar(PolynomialRing(q=q, n=n, coef=np.array([3, -3, 2]))),
         )
-        x_decrypted = kyber.decrypt(u, v)
+        m_decrypted = kyber.decrypt(c)
 
-        self.assertEqual((3,), x_decrypted.shape)
+        self.assertEqual((3,), m_decrypted.shape)
         self.assertEqual(
             kyber.t,
             Matrix.vector(
@@ -111,6 +111,7 @@ class TestKyber(unittest.TestCase):
                 row_vector=False,
             ),
         )
+        u, v = c
         self.assertEqual(
             u,
             Matrix.vector(
@@ -128,4 +129,4 @@ class TestKyber(unittest.TestCase):
                 PolynomialRing(q=q, n=n, coef=np.array([636, 169, 320])),
             ),
         )
-        np.testing.assert_array_equal(x_decrypted, x)
+        np.testing.assert_array_equal(m_decrypted, m)

@@ -38,8 +38,12 @@ class Matrix(Generic[T]):
 
     @property
     def transpose(self) -> "Matrix[T]":
-        # TODO: prevent mutation of matrix elements.
         return Matrix(self._data, row_major_order=not self._row_major_order)
+
+    # TODO: prevent mutation of matrix elements.
+    def __hash__(self) -> int:
+        # TODO: set PYTHONHASHSEED for consistent hashing behaviour.
+        return hash((self._data, self._row_major_order))
 
     def __eq__(self, other: "Matrix[T]") -> bool:
         return (

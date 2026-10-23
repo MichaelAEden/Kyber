@@ -35,6 +35,11 @@ class PolynomialRing:
         if self.n != other.n:
             raise ValueError("Polynomials must have same n.")
 
+    # TODO: prevent mutation of instance attributes.
+    def __hash__(self) -> int:
+        # TODO: set PYTHONHASHSEED for consistent hashing behaviour.
+        return hash((self.q, self.n, self.coef.tobytes()))
+
     def __eq__(self, other: "PolynomialRing") -> bool:
         return (
             self.q == other.q
