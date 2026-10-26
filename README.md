@@ -10,4 +10,5 @@ To get started, install [`uv`](https://docs.astral.sh/uv/#installation) and run 
 
 ## References
 
+[_Module-Lattice-Based Key-Encapsulation Mechanism Standard_, NIST](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
 [_A Gentle Introduction to Lattice-Based Cryptography_, Alfred Menezes](https://cryptography101.ca/wp-content/uploads/lattice-based-cryptography.pdf).
