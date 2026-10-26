@@ -1,6 +1,6 @@
 import unittest
 
-from encryption.kyber_kem import KyberKEM
+from kyber.kem import KyberKEM
 
 
 class TestKyberKEM(unittest.TestCase):

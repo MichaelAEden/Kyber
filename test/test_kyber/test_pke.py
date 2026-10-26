@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from encryption.kyber_pke import KyberPKE
+from kyber.pke import KyberPKE
 from math_.matrix import Matrix
 from math_.polynomial_ring import PolynomialRing
 

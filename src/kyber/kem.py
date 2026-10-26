@@ -3,7 +3,7 @@ from typing import Callable
 
 import numpy as np
 
-from encryption.kyber_pke import KyberPKE, KyberCiphertext
+from kyber.pke import KyberPKE, KyberCiphertext
 
 
 def hash_(hash_fn: Callable) -> Callable[[any], bytes]:

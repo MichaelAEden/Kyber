@@ -6,7 +6,7 @@ https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
 import math
 from fractions import Fraction
 
-from encryption.byte_encoding import count_bits
+from kyber.byte_encoding import count_bits
 from math_.rounding import round_break_ties_upward
 
 

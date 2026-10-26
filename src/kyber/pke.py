@@ -1,8 +1,8 @@
 import numpy as np
 
-from encryption.kyber_key_gen import random_polynomial_matrix
+from kyber.key_gen import random_polynomial_matrix
 from math_.matrix import Matrix
-from math_.modulo import modular_rounding
+from math_.rounding import modular_rounding
 from math_.polynomial_ring import PolynomialRing
 
 KyberCiphertext = tuple[Matrix[PolynomialRing], Matrix[PolynomialRing]]
