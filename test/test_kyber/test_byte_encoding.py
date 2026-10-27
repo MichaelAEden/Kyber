@@ -2,74 +2,134 @@ import unittest
 
 import numpy as np
 
-from kyber.byte_encoding import byte_encode, byte_decode
+from kyber.byte_encoding import bit_encode, bit_decode, bits_to_bytes, bytes_to_bits
 
 
-class TestByteEncoding(unittest.TestCase):
+class TestBitEncode(unittest.TestCase):
 
     def test_encode_8_bit_integers(self):
-        q = 3329
         d = 8
 
-        data = np.array([1, 1, 1, 1, 1, 1, 1, 255])
-        data_encoded_expected = b"\x01\x01\x01\x01\x01\x01\x01\xff"
-        data_encoded_actual = byte_encode(data, d=d, q=q)
+        integers = np.array([0, 1, 255])
+        # fmt: off
+        bits_expected = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+        bits_actual = bit_encode(integers, d=d)
 
-        self.assertEqual(data_encoded_expected, data_encoded_actual)
+        np.testing.assert_array_equal(bits_expected, bits_actual)
 
     def test_encode_12_bit_integers(self):
-        q = 3329
         d = 12
 
-        data = np.array([1, 1, 1, 1, 1, 1, 1, 3328])
-        data_encoded_expected = b"\x01\x10\x00\x01\x10\x00\x01\x10\x00\x01\x00\xd0"
-        data_encoded_actual = byte_encode(data, d=d, q=q)
+        integers = np.array([0, 1, 4095])
+        # fmt: off
+        bits_expected = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+        bits_actual = bit_encode(integers, d=d)
 
-        self.assertEqual(data_encoded_expected, data_encoded_actual)
+        np.testing.assert_array_equal(bits_expected, bits_actual)
 
-    def test_encode_8_bit_data_out_of_range(self):
-        q = 3329
-        d = 8
-
-        data = np.array([1, 1, 1, 1, 1, 1, 1, 256])
-        with self.assertRaises(ValueError):
-            byte_encode(data, d=d, q=q)
-
-    def test_encode_12_bit_data_out_of_range(self):
-        q = 3329
+    def test_encode_out_of_range(self):
         d = 12
 
-        data = np.array([1, 1, 1, 1, 1, 1, 1, 3329])
-        with self.assertRaises(ValueError):
-            byte_encode(data, d=d, q=q)
+        integers = np.array([1, 4096])
+        with self.assertRaises(OverflowError):
+            bit_encode(integers, d=d)
 
 
-class TestByteDecoding(unittest.TestCase):
+class TestBitDecode(unittest.TestCase):
 
     def test_decode_8_bit_integers(self):
-        q = 3329
         d = 8
 
-        data = b"\x01\x01\x01\x01\x01\x01\x01\xff"
-        data_decoded_expected = np.array([1, 1, 1, 1, 1, 1, 1, 255])
-        data_decoded_actual = byte_decode(data, d=d, q=q)
+        # fmt: off
+        bits = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+        integers_expected = np.array([0, 1, 255])
+        integers_actual = bit_decode(bits, d=d)
 
-        np.testing.assert_array_equal(data_decoded_actual, data_decoded_expected)
+        np.testing.assert_array_equal(integers_expected, integers_actual)
 
     def test_decode_12_bit_integers(self):
-        q = 3329
         d = 12
 
-        data = b"\x01\x10\x00\x01\x10\x00\x01\x10\x00\x01\x00\xd0"
-        data_decoded_expected = np.array([1, 1, 1, 1, 1, 1, 1, 3328])
-        data_decoded_actual = byte_decode(data, d=d, q=q)
+        # fmt: off
+        bits = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+        integers_expected = np.array([0, 1, 4095])
+        integers_actual = bit_decode(bits, d=d)
 
-        np.testing.assert_array_equal(data_decoded_expected, data_decoded_actual)
+        np.testing.assert_array_equal(integers_expected, integers_actual)
 
-    def test_decode_12_bit_data_out_of_range(self):
-        q = 3329
+    def test_invalid_input_length(self):
         d = 12
 
-        data = b"\x01\x10\x00\x01\x10\x00\x01\x10\x00\x01\x10\xd0"
+        # fmt: off
+        bits = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+
         with self.assertRaises(ValueError):
-            byte_decode(data, d=d, q=q)
+            bit_decode(bits, d=d)
+
+
+class TestBitToBytes(unittest.TestCase):
+
+    def test(self):
+        # fmt: off
+        bits = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+        bytes_expected = b"\x00\x01\xff"
+        bytes_actual = bits_to_bytes(bits)
+
+        self.assertEqual(bytes_expected, bytes_actual)
+
+    def test_invalid_input_length(self):
+        # fmt: off
+        bits = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+
+        with self.assertRaises(ValueError):
+            bits_to_bytes(bits)
+
+
+class TestBytesToBits(unittest.TestCase):
+
+    def test(self):
+        # fmt: off
+        bits_expected = np.array([
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1,
+        ], dtype=bool)
+        # fmt: on
+        bits_actual = bytes_to_bits(b"\x00\x01\xff")
+
+        np.testing.assert_array_equal(bits_expected, bits_actual)
