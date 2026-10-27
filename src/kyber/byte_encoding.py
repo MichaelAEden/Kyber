@@ -32,6 +32,10 @@ def bit_encode(integers: np.ndarray, d: int) -> np.ndarray:
 
 
 def bit_decode(bits: np.ndarray, d: int) -> np.ndarray:
+    # In FIPS 203, this algorithm outputs integers modulo q.
+    # For simplicity, the modular step was omitted here and implemented
+    # downstream instead.
+    # TODO: check all downstream usages.
     n, r = divmod(len(bits), d)
     if r != 0:
         raise ValueError(f"Bit array length must be divisible by {d}.")
