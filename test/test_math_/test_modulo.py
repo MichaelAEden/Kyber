@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from math_.rounding import modular_rounding
+from math_.modulo import modular_rounding
 
 
 class TestModularRounding(unittest.TestCase):
