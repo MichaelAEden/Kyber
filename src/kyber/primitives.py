@@ -55,9 +55,14 @@ def hash_j(s: bytes) -> bytes:
     )
 
 
-def extendable_output_function(data: bytes, output_bytes: int):
-    return _hash_wrapper(
-        data=data,
-        hash_fn=hashlib.shake_128,
-        output_bytes=output_bytes,
-    )
+class ExtendableOutputFunction:
+
+    def __init__(self, seed: bytes):
+        self._m = hashlib.shake_128(seed)
+        self._p = 0
+
+    def squeeze(self, length: int) -> bytes:
+        # TODO: avoid producing entire digest each invocation.
+        digest = self._m.digest(self._p + length)[self._p : self._p + length]
+        self._p += length
+        return digest
