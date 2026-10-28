@@ -1,5 +1,5 @@
 [project]
-name = "encryption"
+name = "kyber"
 version = "0.1.0"
 description = "Python implementation of ML-KEM (Kyber) and other encryption schemes."
 readme = "README.md"
