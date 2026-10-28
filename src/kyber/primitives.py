@@ -6,6 +6,8 @@ https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
 import hashlib
 from typing import Callable
 
+from Crypto.Hash import SHAKE128
+
 
 def _hash_wrapper(
     data: bytes,
@@ -58,11 +60,8 @@ def hash_j(s: bytes) -> bytes:
 class ExtendableOutputFunction:
 
     def __init__(self, seed: bytes):
-        self._m = hashlib.shake_128(seed)
-        self._p = 0
+        self._shake128 = SHAKE128.new()
+        self._shake128.update(seed)
 
     def squeeze(self, length: int) -> bytes:
-        # TODO: avoid producing entire digest each invocation.
-        digest = self._m.digest(self._p + length)[self._p : self._p + length]
-        self._p += length
-        return digest
+        return self._shake128.read(length)
