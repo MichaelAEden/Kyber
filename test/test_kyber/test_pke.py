@@ -4,7 +4,7 @@ import numpy as np
 
 from kyber.pke import KyberPKE
 from math_.matrix import Matrix
-from math_.polynomial_ring import PolynomialRing
+from math_.polynomial_ring import Polynomial
 
 
 class TestKyberPKE(unittest.TestCase):
@@ -44,35 +44,35 @@ class TestKyberPKE(unittest.TestCase):
             A=Matrix(
                 (
                     (
-                        PolynomialRing(q=q, n=n, coef=np.array([329, 26, 34])),
-                        PolynomialRing(q=q, n=n, coef=np.array([295, 745, 292])),
-                        PolynomialRing(q=q, n=n, coef=np.array([732, 248, 641])),
+                        Polynomial(q=q, n=n, coef=np.array([329, 26, 34])),
+                        Polynomial(q=q, n=n, coef=np.array([295, 745, 292])),
+                        Polynomial(q=q, n=n, coef=np.array([732, 248, 641])),
                     ),
                     (
-                        PolynomialRing(q=q, n=n, coef=np.array([833, 849, 647])),
-                        PolynomialRing(q=q, n=n, coef=np.array([396, 363, 924])),
-                        PolynomialRing(q=q, n=n, coef=np.array([312, 803, 31])),
+                        Polynomial(q=q, n=n, coef=np.array([833, 849, 647])),
+                        Polynomial(q=q, n=n, coef=np.array([396, 363, 924])),
+                        Polynomial(q=q, n=n, coef=np.array([312, 803, 31])),
                     ),
                     (
-                        PolynomialRing(q=q, n=n, coef=np.array([176, 501, 802])),
-                        PolynomialRing(q=q, n=n, coef=np.array([738, 941, 521])),
-                        PolynomialRing(q=q, n=n, coef=np.array([19, 582, 224])),
+                        Polynomial(q=q, n=n, coef=np.array([176, 501, 802])),
+                        Polynomial(q=q, n=n, coef=np.array([738, 941, 521])),
+                        Polynomial(q=q, n=n, coef=np.array([19, 582, 224])),
                     ),
                 )
             ),
             s=Matrix.vector(
                 (
-                    PolynomialRing(q=q, n=n, coef=np.array([1, 0, 3])),
-                    PolynomialRing(q=q, n=n, coef=np.array([1, 1, 0])),
-                    PolynomialRing(q=q, n=n, coef=np.array([-2, 0, 2])),
+                    Polynomial(q=q, n=n, coef=np.array([1, 0, 3])),
+                    Polynomial(q=q, n=n, coef=np.array([1, 1, 0])),
+                    Polynomial(q=q, n=n, coef=np.array([-2, 0, 2])),
                 ),
                 row_vector=False,
             ),
             e=Matrix.vector(
                 (
-                    PolynomialRing(q=q, n=n, coef=np.array([-2, 3, -1])),
-                    PolynomialRing(q=q, n=n, coef=np.array([1, -1, 2])),
-                    PolynomialRing(q=q, n=n, coef=np.array([3, 1, -1])),
+                    Polynomial(q=q, n=n, coef=np.array([-2, 3, -1])),
+                    Polynomial(q=q, n=n, coef=np.array([1, -1, 2])),
+                    Polynomial(q=q, n=n, coef=np.array([3, 1, -1])),
                 ),
                 row_vector=False,
             ),
@@ -81,21 +81,21 @@ class TestKyberPKE(unittest.TestCase):
             m=m,
             r=Matrix.vector(
                 (
-                    PolynomialRing(q=q, n=n, coef=np.array([-2, -2, 1])),
-                    PolynomialRing(q=q, n=n, coef=np.array([0, 0, 3])),
-                    PolynomialRing(q=q, n=n, coef=np.array([-1, -1, 3])),
+                    Polynomial(q=q, n=n, coef=np.array([-2, -2, 1])),
+                    Polynomial(q=q, n=n, coef=np.array([0, 0, 3])),
+                    Polynomial(q=q, n=n, coef=np.array([-1, -1, 3])),
                 ),
                 row_vector=False,
             ),
             e1=Matrix.vector(
                 (
-                    PolynomialRing(q=q, n=n, coef=np.array([3, -2, 2])),
-                    PolynomialRing(q=q, n=n, coef=np.array([2, -3, -1])),
-                    PolynomialRing(q=q, n=n, coef=np.array([-3, 1, -2])),
+                    Polynomial(q=q, n=n, coef=np.array([3, -2, 2])),
+                    Polynomial(q=q, n=n, coef=np.array([2, -3, -1])),
+                    Polynomial(q=q, n=n, coef=np.array([-3, 1, -2])),
                 ),
                 row_vector=False,
             ),
-            e2=Matrix.scalar(PolynomialRing(q=q, n=n, coef=np.array([3, -3, 2]))),
+            e2=Matrix.scalar(Polynomial(q=q, n=n, coef=np.array([3, -3, 2]))),
         )
         m_decrypted = kyber.decrypt(c)
 
@@ -104,9 +104,9 @@ class TestKyberPKE(unittest.TestCase):
             kyber.t,
             Matrix.vector(
                 (
-                    PolynomialRing(q=q, n=n, coef=np.array([274, 180, 257])),
-                    PolynomialRing(q=q, n=n, coef=np.array([484, 971, 42])),
-                    PolynomialRing(q=q, n=n, coef=np.array([664, 145, 399])),
+                    Polynomial(q=q, n=n, coef=np.array([274, 180, 257])),
+                    Polynomial(q=q, n=n, coef=np.array([484, 971, 42])),
+                    Polynomial(q=q, n=n, coef=np.array([664, 145, 399])),
                 ),
                 row_vector=False,
             ),
@@ -116,9 +116,9 @@ class TestKyberPKE(unittest.TestCase):
             u,
             Matrix.vector(
                 (
-                    PolynomialRing(q=q, n=n, coef=np.array([918, 176, 944])),
-                    PolynomialRing(q=q, n=n, coef=np.array([77, 530, 160])),
-                    PolynomialRing(q=q, n=n, coef=np.array([572, 989, 130])),
+                    Polynomial(q=q, n=n, coef=np.array([918, 176, 944])),
+                    Polynomial(q=q, n=n, coef=np.array([77, 530, 160])),
+                    Polynomial(q=q, n=n, coef=np.array([572, 989, 130])),
                 ),
                 row_vector=False,
             ),
@@ -126,7 +126,7 @@ class TestKyberPKE(unittest.TestCase):
         self.assertEqual(
             v,
             Matrix.scalar(
-                PolynomialRing(q=q, n=n, coef=np.array([636, 169, 320])),
+                Polynomial(q=q, n=n, coef=np.array([636, 169, 320])),
             ),
         )
         np.testing.assert_array_equal(m_decrypted, m)

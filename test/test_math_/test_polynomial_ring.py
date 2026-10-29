@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from math_.polynomial_ring import PolynomialRing, anti_circulant
+from math_.polynomial_ring import Polynomial, anti_circulant
 
 
 class TestAntiCirculant(unittest.TestCase):
@@ -26,8 +26,8 @@ class TestPolynomialRing(unittest.TestCase):
     def test_multiplication(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14]))
 
         h = f * g
 
@@ -36,8 +36,8 @@ class TestPolynomialRing(unittest.TestCase):
         np.testing.assert_array_equal(np.array([19, 3, 10, 21]), h.coef)
 
     def test_multiplication_incompatible(self):
-        f = PolynomialRing(q=43, n=4, coef=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=47, n=4, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=43, n=4, coef=np.array([33, 41, 0, 12]))
+        g = Polynomial(q=47, n=4, coef=np.array([2, 17, 39, 14]))
 
         with self.assertRaises(ValueError):
             f * g
@@ -45,8 +45,8 @@ class TestPolynomialRing(unittest.TestCase):
     def test_addition(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14]))
 
         h = f + g
 
@@ -57,8 +57,8 @@ class TestPolynomialRing(unittest.TestCase):
     def test_subtraction(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14]))
 
         h = f - g
 
@@ -69,15 +69,15 @@ class TestPolynomialRing(unittest.TestCase):
     def test_equal(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
 
         self.assertEqual(f, g)
 
     def test_not_equal(self):
         q = 43
         n = 4
-        f = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = PolynomialRing(q=q, n=n, coef=np.array([33, 41, 0, 0]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        g = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 0]))
 
         self.assertNotEqual(f, g)

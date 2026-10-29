@@ -14,7 +14,7 @@ def anti_circulant(x: np.ndarray) -> np.ndarray:
     return circulant(x) * mask
 
 
-class PolynomialRing:
+class Polynomial:
 
     def __init__(self, q: int, n: int, coef: np.ndarray):
         """
@@ -29,7 +29,7 @@ class PolynomialRing:
         self.n = n
         self.coef = coef
 
-    def _check_compatibility(self, other: "PolynomialRing"):
+    def _check_compatibility(self, other: "Polynomial"):
         if self.q != other.q:
             raise ValueError("Polynomials must have same q.")
         if self.n != other.n:
@@ -40,14 +40,14 @@ class PolynomialRing:
         # TODO: set PYTHONHASHSEED for consistent hashing behaviour.
         return hash((self.q, self.n, self.coef.tobytes()))
 
-    def __eq__(self, other: "PolynomialRing") -> bool:
+    def __eq__(self, other: "Polynomial") -> bool:
         return (
             self.q == other.q
             and self.n == other.n
             and np.array_equal(self.coef, other.coef)
         )
 
-    def __mul__(self, other: "PolynomialRing") -> "PolynomialRing":
+    def __mul__(self, other: "Polynomial") -> "Polynomial":
         self._check_compatibility(other)
 
         a = np.mod(anti_circulant(self.coef), self.q)
@@ -56,20 +56,20 @@ class PolynomialRing:
         c = np.matmul(a, b).reshape((self.n,))
         c = np.mod(c, self.q)
 
-        return PolynomialRing(q=self.q, n=self.n, coef=c)
+        return Polynomial(q=self.q, n=self.n, coef=c)
 
-    def __add__(self, other: "PolynomialRing") -> "PolynomialRing":
+    def __add__(self, other: "Polynomial") -> "Polynomial":
         self._check_compatibility(other)
 
         x = self.coef + other.coef
         x = np.mod(x, self.q)
 
-        return PolynomialRing(q=self.q, n=self.n, coef=x)
+        return Polynomial(q=self.q, n=self.n, coef=x)
 
-    def __sub__(self, other: "PolynomialRing") -> "PolynomialRing":
+    def __sub__(self, other: "Polynomial") -> "Polynomial":
         self._check_compatibility(other)
 
         x = self.coef - other.coef
         x = np.mod(x, self.q)
 
-        return PolynomialRing(q=self.q, n=self.n, coef=x)
+        return Polynomial(q=self.q, n=self.n, coef=x)

@@ -3,14 +3,14 @@ from typing import Callable
 import numpy as np
 
 from math_.matrix import Matrix
-from math_.polynomial_ring import PolynomialRing
+from math_.polynomial_ring import Polynomial
 
 
 def _random_polynomial(
     q: int, n: int, max_coef: int, rng: np.random.Generator
-) -> PolynomialRing:
+) -> Polynomial:
     coef = rng.integers(low=0, high=max_coef, size=n)
-    return PolynomialRing(q=q, n=n, coef=coef)
+    return Polynomial(q=q, n=n, coef=coef)
 
 
 def _random_matrix(row_count: int, col_count: int, fn: Callable) -> Matrix:
@@ -26,7 +26,7 @@ def random_polynomial_matrix(
     row_count: int,
     col_count: int,
     rng: np.random.Generator,
-) -> Matrix[PolynomialRing]:
+) -> Matrix[Polynomial]:
     return _random_matrix(
         row_count=row_count,
         col_count=col_count,

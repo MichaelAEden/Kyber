@@ -7,9 +7,9 @@ from kyber.primitives import hash_g, pseudorandom_function
 from kyber.sampling import sample_ntt, sample_polynomial
 from math_.matrix import Matrix
 from math_.modulo import modular_rounding
-from math_.polynomial_ring import PolynomialRing
+from math_.polynomial_ring import Polynomial
 
-KyberCiphertext = tuple[Matrix[PolynomialRing], Matrix[PolynomialRing]]
+KyberCiphertext = tuple[Matrix[Polynomial], Matrix[Polynomial]]
 
 
 class KyberPKE:
@@ -27,9 +27,9 @@ class KyberPKE:
         k: int,
         nu1: int,
         nu2: int,
-        A: Matrix[PolynomialRing] = None,
-        s: Matrix[PolynomialRing] = None,
-        e: Matrix[PolynomialRing] = None,
+        A: Matrix[Polynomial] = None,
+        s: Matrix[Polynomial] = None,
+        e: Matrix[Polynomial] = None,
         seed: int = None,
     ):
         """
@@ -130,19 +130,19 @@ class KyberPKE:
         return ek, dk
 
     @property
-    def public_key(self) -> tuple[Matrix[PolynomialRing], Matrix[PolynomialRing]]:
+    def public_key(self) -> tuple[Matrix[Polynomial], Matrix[Polynomial]]:
         return self.A, self.t
 
     @property
-    def private_key(self) -> Matrix[PolynomialRing]:
+    def private_key(self) -> Matrix[Polynomial]:
         return self.s
 
     def encrypt(
         self,
         m: np.ndarray,
-        r: Matrix[PolynomialRing] = None,
-        e1: Matrix[PolynomialRing] = None,
-        e2: Matrix[PolynomialRing] = None,
+        r: Matrix[Polynomial] = None,
+        e1: Matrix[Polynomial] = None,
+        e2: Matrix[Polynomial] = None,
         seed: int = None,
     ) -> KyberCiphertext:
         rng = np.random.default_rng(seed)
@@ -190,7 +190,7 @@ class KyberPKE:
             self.t.transpose * r
             + e2
             + Matrix.scalar(
-                PolynomialRing(q=self.q, n=self.n, coef=np.ceil(self.q / 2) * m)
+                Polynomial(q=self.q, n=self.n, coef=np.ceil(self.q / 2) * m)
             )
         )
 
