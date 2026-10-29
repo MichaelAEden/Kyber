@@ -21,16 +21,16 @@ def _hash_wrapper(
         return result.digest()
 
 
-def pseudorandom_function(n: int, s: bytes, b: bytes) -> bytes:
-    if n != 2 and n != 3:
-        raise ValueError("n must be 2 or 3.")
+def pseudorandom_function(s: bytes, b: bytes, nu: int) -> bytes:
+    if nu != 2 and nu != 3:
+        raise ValueError("nu must be 2 or 3.")
     if len(s) != 32 or len(b) != 1:
         raise ValueError("s, b must be 32 bytes, 1 byte respectively.")
 
     return _hash_wrapper(
         data=(s + b),
         hash_fn=hashlib.shake_256,
-        output_bytes=64 * n,
+        output_bytes=64 * nu,
     )
 
 

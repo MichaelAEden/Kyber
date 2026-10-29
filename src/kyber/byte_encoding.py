@@ -4,6 +4,7 @@ https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
 """
 
 import math
+from typing import Union
 
 import numpy as np
 
@@ -54,6 +55,12 @@ def bits_to_bytes(bits: np.ndarray) -> bytes:
 def bytes_to_bits(data: bytes) -> np.ndarray:
     integers = np.array([data[i] for i in range(0, len(data))])
     return bit_encode(integers, d=8)
+
+
+def byte_encode(integers: Union[int, np.ndarray], d: int) -> bytes:
+    if isinstance(integers, int):
+        integers = np.array([integers])
+    return bits_to_bytes(bit_encode(integers, d=d))
 
 
 def bit_reverse(integers: np.ndarray, d: int) -> np.ndarray:

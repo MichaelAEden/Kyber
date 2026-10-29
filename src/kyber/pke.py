@@ -1,6 +1,10 @@
 import numpy as np
 
+from kyber.byte_encoding import byte_encode
 from kyber.key_gen import random_polynomial_matrix
+from kyber.ntt import ntt
+from kyber.primitives import hash_g, pseudorandom_function
+from kyber.sampling import sample_ntt, sample_polynomial
 from math_.matrix import Matrix
 from math_.modulo import modular_rounding
 from math_.polynomial_ring import PolynomialRing
@@ -12,11 +16,9 @@ class KyberPKE:
     """
     Implements Kyber public-key encryption (PKE) scheme, without ciphertext compression.
 
-    See Section 6.1 in the following document:
-    https://cryptography101.ca/wp-content/uploads/lattice-based-cryptography.pdf
+    See Section 5.1 of FIPS 203.
+    https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
     """
-
-    # TODO: is cyphertext compression lossy or does it only increase decryption error rate?
 
     def __init__(
         self,
@@ -84,6 +86,48 @@ class KyberPKE:
             )
         )
         self.t = self.A * self.s + e
+
+    @staticmethod
+    def from_seed(
+        n: int,
+        q: int,
+        k: int,
+        nu1: int,
+        d: bytes,
+    ):
+        rho, sigma = hash_g(d + byte_encode(k))
+
+        # Generate lattice matrix, A.
+        A = np.zeros((k, k, n))
+        for i in range(k):
+            for j in range(k):
+                A[i, j, :] = sample_ntt(rho + byte_encode(np.array([j, i]), d=8), q=q)
+
+        # Generate secret vector, s.
+        N = 0
+        s = np.zeros((k, n))
+        for i in range(k):
+            s[i, :] = sample_polynomial(
+                pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1), nu=nu1, q=q
+            )
+            N += 1
+
+        # Generate error vector, e.
+        e = np.zeros((k, n))
+        for i in range(k):
+            e[i, :] = sample_polynomial(
+                pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1), nu=nu1, q=q
+            )
+            N += 1
+
+        s_ntt = ntt(s)
+        e_ntt = ntt(e)
+        t_ntt = np.zeros((k,))
+
+        ek = byte_encode(t_ntt, d=12) + rho
+        dk = byte_encode(s_ntt, d=12)
+
+        return ek, dk
 
     @property
     def public_key(self) -> tuple[Matrix[PolynomialRing], Matrix[PolynomialRing]]:
