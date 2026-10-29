@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import numpy as np
 from scipy.linalg import circulant
 
@@ -14,20 +16,18 @@ def anti_circulant(x: np.ndarray) -> np.ndarray:
     return circulant(x) * mask
 
 
+@dataclass(frozen=True)
 class Polynomial:
+    # Maximum value for polynomial coefficient.
+    q: int
+    # Degree of reduction polynomial.
+    n: int
+    # Polynomial coefficients in order of ascending degree.
+    coef: np.ndarray
 
-    def __init__(self, q: int, n: int, coef: np.ndarray):
-        """
-        :param q: Maximum value for polynomial coefficient.
-        :param n: Degree of reduction polynomial.
-        :param coef: Polynomial coefficients in order of ascending degree.
-        """
-        if len(coef) != n:
+    def __post_init__(self):
+        if len(self.coef) != self.n:
             raise ValueError("Polynomial coefficients must have length n.")
-
-        self.q = q
-        self.n = n
-        self.coef = coef
 
     def _check_compatibility(self, other: "Polynomial"):
         if self.q != other.q:
