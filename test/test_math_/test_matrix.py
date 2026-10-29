@@ -7,6 +7,17 @@ from math_.matrix import Matrix
 
 class TestMatrix(unittest.TestCase):
 
+    def test_iter(self):
+        a = Matrix[int](
+            (
+                (1, 2, 3),
+                (4, 5, 6),
+            )
+        )
+        values_expected = [1, 2, 3, 4, 5, 6]
+        values_actual = list(iter(a))
+        self.assertListEqual(values_expected, values_actual)
+
     def test_equal(self):
         a = Matrix[int](
             (

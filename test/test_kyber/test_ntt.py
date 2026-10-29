@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-from kyber.ntt import compute_zeta_values, ntt, inverse_ntt
-from kyber.sampling import sample_ntt, sample_polynomial
+from math_.ntt import compute_zeta_values, ntt, inverse_ntt
+from kyber.sampling import sample_polynomial
 
 
 class TestComputeZetaValues(unittest.TestCase):

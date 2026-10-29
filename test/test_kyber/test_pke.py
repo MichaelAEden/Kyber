@@ -10,22 +10,26 @@ from math_.polynomial_ring import Polynomial
 class TestKyberPKE(unittest.TestCase):
 
     def test_random_values(self):
-        m = np.array([1, 1, 0])
+        q = 3329
 
-        q = 991
-        n = 3
-        kyber = KyberPKE(
+        n = 256
+        m = np.zeros(n)
+        m[0] = 1
+        m[5] = 1
+        m[10] = 1
+
+        kyber = KyberPKE.from_seed(
             n=n,
             q=q,
             k=3,
             nu1=3,
             nu2=3,
-            seed=2026,
+            d=b"\x00" * 32,
         )
         c = kyber.encrypt(m, seed=2027)
         m_decrypted = kyber.decrypt(c)
 
-        self.assertEqual((3,), m_decrypted.shape)
+        self.assertEqual((n,), m_decrypted.shape)
         np.testing.assert_array_equal(m_decrypted, m)
 
     def test_fixed_values(self):
@@ -41,6 +45,7 @@ class TestKyberPKE(unittest.TestCase):
             k=3,
             nu1=3,
             nu2=3,
+            rho=b"\x00" * 32,
             A=Matrix(
                 (
                     (

@@ -7,12 +7,13 @@ import numpy as np
 
 from kyber.byte_encoding import bytes_to_bits
 from kyber.primitives import ExtendableOutputFunction
+from math_.polynomial_ring import Polynomial
+from math_.ntt import PolynomialNTT
 
 
-def sample_ntt(seed: bytes, q: int) -> np.ndarray:
+def sample_ntt(seed: bytes, q: int) -> PolynomialNTT:
     """
-    Sample coefficients from a uniform distribution to represent a polynomial
-    in the NTT domain.
+    Sample polynomial coefficients in NTT domain from a uniform distribution.
     """
     seed_length = 34
     if len(seed) != seed_length:
@@ -37,10 +38,10 @@ def sample_ntt(seed: bytes, q: int) -> np.ndarray:
             a[i] = d2
             i += 1
 
-    return a
+    return PolynomialNTT(q=q, n=n, coef=a)
 
 
-def sample_polynomial(seed: bytes, nu: int, q: int) -> np.ndarray:
+def sample_polynomial(seed: bytes, nu: int, q: int) -> Polynomial:
     """
     Sample polynomial coefficients from a centered binomial distribution.
     """
@@ -59,4 +60,4 @@ def sample_polynomial(seed: bytes, nu: int, q: int) -> np.ndarray:
         y = sum(bits[2 * i * nu + nu + j] for j in range(nu))
         f[i] = (x - y) % q
 
-    return f
+    return Polynomial(q=q, n=n, coef=f)

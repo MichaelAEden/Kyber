@@ -1,31 +1,35 @@
 import functools
 import operator
-from typing import TypeVar, Generic, Callable
+from typing import TypeVar, Generic, Callable, Iterable
 
 T = TypeVar("T")
 
 
 class Matrix(Generic[T]):
 
-    # TODO: use iterable rather than tuple type.
-    def __init__(self, data: tuple[tuple[T, ...], ...], row_major_order: bool = True):
-        k = len(data[0])
-        l = len(data)
-        for row in data[1:]:
-            if len(row) != k:
+    def __init__(self, data: Iterable[Iterable[T]], row_major_order: bool = True):
+        col_count = None
+        rows = []
+        for i, row in enumerate(data):
+            row = tuple(row)
+            if col_count is not None and len(row) != col_count:
                 raise ValueError("All rows and columns must have same length.")
+            rows.append(row)
+            col_count = len(row)
+        row_count = len(rows)
+        rows = tuple(rows)
 
-        self._data = data
+        self._data = rows
         self._row_major_order = row_major_order
         if self._row_major_order:
-            self._col_count = k
-            self._row_count = l
+            self._row_count = row_count
+            self._col_count = col_count
         else:
-            self._col_count = l
-            self._row_count = k
+            self._row_count = col_count
+            self._col_count = row_count
 
     @classmethod
-    def vector(cls, data: tuple[T, ...], row_vector: bool = True) -> "Matrix[T]":
+    def vector(cls, data: Iterable[T], row_vector: bool = True) -> "Matrix[T]":
         return cls((data,), row_major_order=row_vector)
 
     @classmethod
@@ -39,6 +43,11 @@ class Matrix(Generic[T]):
     @property
     def transpose(self) -> "Matrix[T]":
         return Matrix(self._data, row_major_order=not self._row_major_order)
+
+    def __iter__(self):
+        for i in range(self._row_count):
+            for j in range(self._col_count):
+                yield self[i, j]
 
     # TODO: prevent mutation of matrix elements.
     def __hash__(self) -> int:

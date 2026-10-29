@@ -2,12 +2,12 @@ import numpy as np
 
 from kyber.byte_encoding import byte_encode
 from kyber.key_gen import random_polynomial_matrix
-from kyber.ntt import ntt
 from kyber.primitives import hash_g, pseudorandom_function
 from kyber.sampling import sample_ntt, sample_polynomial
 from math_.matrix import Matrix
 from math_.modulo import modular_rounding
 from math_.polynomial_ring import Polynomial
+from math_.ntt import PolynomialNTT, ntt
 
 KyberCiphertext = tuple[Matrix[Polynomial], Matrix[Polynomial]]
 
@@ -27,10 +27,10 @@ class KyberPKE:
         k: int,
         nu1: int,
         nu2: int,
-        A: Matrix[Polynomial] = None,
-        s: Matrix[Polynomial] = None,
-        e: Matrix[Polynomial] = None,
-        seed: int = None,
+        rho: bytes,
+        A: Matrix[PolynomialNTT],
+        s: Matrix[PolynomialNTT],
+        e: Matrix[PolynomialNTT],
     ):
         """
         :param n: Degree of reduction polynomial.
@@ -38,104 +38,91 @@ class KyberPKE:
         :param k: Dimensions of lattice matrix.
         :param nu1: Coefficient bound for s, e, r.
         :param nu2: Coefficient bound for e1, e2.
-        :param seed: Seed for RNG.
         """
-        rng = np.random.default_rng(seed)
-
         # Parameters
         self.n = n
         self.q = q
         self.k = k
         self.nu1 = nu1
         self.nu2 = nu2
+        self.rho = rho
 
-        self.A = (
-            A
-            if A is not None
-            else random_polynomial_matrix(
-                q=self.q,
-                n=self.n,
-                max_coef=self.q,
-                row_count=self.k,
-                col_count=self.k,
-                rng=rng,
-            )
-        )
-        self.s = (
-            s
-            if s is not None
-            else random_polynomial_matrix(
-                q=self.q,
-                n=self.n,
-                max_coef=self.nu1,
-                row_count=self.k,
-                col_count=1,
-                rng=rng,
-            )
-        )
-        e = (
-            e
-            if e is not None
-            else random_polynomial_matrix(
-                q=self.q,
-                n=self.n,
-                max_coef=self.nu1,
-                row_count=self.k,
-                col_count=1,
-                rng=rng,
-            )
-        )
+        # Encryption, decryption keys.
+        self.A = A
+        self.s = s
         self.t = self.A * self.s + e
 
-    @staticmethod
+    @classmethod
     def from_seed(
+        cls,
         n: int,
         q: int,
         k: int,
         nu1: int,
+        nu2: int,
         d: bytes,
     ):
-        rho, sigma = hash_g(d + byte_encode(k))
+        rho, sigma = hash_g(d + byte_encode(k, d=8))
 
         # Generate lattice matrix, A.
-        A = np.zeros((k, k, n))
+        A_ntt = np.zeros((k, k)).tolist()
         for i in range(k):
             for j in range(k):
-                A[i, j, :] = sample_ntt(rho + byte_encode(np.array([j, i]), d=8), q=q)
+                A_ntt[i][j] = sample_ntt(rho + byte_encode(np.array([j, i]), d=8), q=q)
+        A_ntt = Matrix(A_ntt)
 
         # Generate secret vector, s.
         N = 0
-        s = np.zeros((k, n))
+        s_ntt = []
         for i in range(k):
-            s[i, :] = sample_polynomial(
-                pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1), nu=nu1, q=q
+            s_ntt.append(
+                ntt(
+                    sample_polynomial(
+                        pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1),
+                        nu=nu1,
+                        q=q,
+                    )
+                )
             )
             N += 1
+        s_ntt = Matrix.vector(s_ntt, row_vector=False)
 
         # Generate error vector, e.
-        e = np.zeros((k, n))
+        e_ntt = []
         for i in range(k):
-            e[i, :] = sample_polynomial(
-                pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1), nu=nu1, q=q
+            e_ntt.append(
+                ntt(
+                    sample_polynomial(
+                        pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1),
+                        nu=nu1,
+                        q=q,
+                    )
+                )
             )
             N += 1
+        e_ntt = Matrix.vector(e_ntt, row_vector=False)
 
-        s_ntt = ntt(s)
-        e_ntt = ntt(e)
-        t_ntt = np.zeros((k,))
-
-        ek = byte_encode(t_ntt, d=12) + rho
-        dk = byte_encode(s_ntt, d=12)
-
-        return ek, dk
+        return cls(
+            n=n,
+            q=q,
+            k=k,
+            nu1=nu1,
+            nu2=nu2,
+            rho=rho,
+            A=A_ntt,
+            s=s_ntt,
+            e=e_ntt,
+        )
 
     @property
-    def public_key(self) -> tuple[Matrix[Polynomial], Matrix[Polynomial]]:
-        return self.A, self.t
+    def encryption_key(self) -> bytes:
+        coefs = np.concatenate([p.coef for p in self.t])
+        return byte_encode(coefs, d=12) + self.rho
 
     @property
-    def private_key(self) -> Matrix[Polynomial]:
-        return self.s
+    def decryption_key(self) -> bytes:
+        coefs = np.concatenate([p.coef for p in self.s])
+        return byte_encode(coefs, d=12)
 
     def encrypt(
         self,

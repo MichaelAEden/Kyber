@@ -13,8 +13,8 @@ class TestSampleNTT(unittest.TestCase):
         a = sample_ntt(seed, q=q)
 
         # Ensure coefficients are within valid bounds.
-        np.testing.assert_array_less(a, q)
-        np.testing.assert_array_less(-1, a)
+        np.testing.assert_array_less(a.coef, q)
+        np.testing.assert_array_less(-1, a.coef)
 
     def test_invalid_seed_length(self):
         seed = b"\x01\x02" * 16
@@ -31,8 +31,8 @@ class TestSamplePolynomial(unittest.TestCase):
         f = sample_polynomial(seed, nu=nu, q=q)
 
         # Ensure coefficients are within valid bounds.
-        np.testing.assert_array_less(f, q)
-        np.testing.assert_array_less(-1, f)
+        np.testing.assert_array_less(f.coef, q)
+        np.testing.assert_array_less(-1, f.coef)
 
     def test_invalid_seed_length(self):
         seed = b"\x01\x02" * 95

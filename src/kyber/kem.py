@@ -28,7 +28,7 @@ class KyberKEM:
         k: int,
         nu1: int,
         nu2: int,
-        seed: int = None,
+        seed: bytes,
     ):
         """
         :param n: Degree of reduction polynomial.
@@ -38,22 +38,22 @@ class KyberKEM:
         :param nu2: Coefficient bound for e1, e2.
         :param seed: Seed for RNG.
         """
-        if n == 256:
-            self.hash_fn_g = hash_(hashlib.sha3_512)
-            self.hash_fn_h = hash_(hashlib.sha3_256)
-            self.hash_fn_j = hash_(hashlib.sha3_256)
-        else:
+        if n != 256:
             raise ValueError("Only n = 256 is supported.")
 
-        self.kyber_pke = KyberPKE(
+        self.hash_fn_g = hash_(hashlib.sha3_512)
+        self.hash_fn_h = hash_(hashlib.sha3_256)
+        self.hash_fn_j = hash_(hashlib.sha3_256)
+
+        self.kyber_pke = KyberPKE.from_seed(
             n=n,
             q=q,
             k=k,
             nu1=nu1,
             nu2=nu2,
-            seed=seed,
+            d=seed,
         )
-        rng = np.random.default_rng(seed)
+        rng = np.random.default_rng(seed=2026)
 
         self.z = rng.integers(low=0, high=1, endpoint=True, size=(256,))
 
@@ -62,7 +62,7 @@ class KyberKEM:
 
         m = rng.integers(low=0, high=1, endpoint=True, size=(256,)).astype(bool)
 
-        h = self.hash_fn_h(self.kyber_pke.public_key)
+        h = self.hash_fn_h(self.kyber_pke.encryption_key)
         K_R = self.hash_fn_g((m.tobytes(), h))
         K, R = K_R[:128], K_R[128:]
 
@@ -73,7 +73,7 @@ class KyberKEM:
     def decapsulate(self, c: KyberCiphertext) -> bytes:
         m = self.kyber_pke.decrypt(c)
 
-        h = self.hash_fn_h(self.kyber_pke.public_key)
+        h = self.hash_fn_h(self.kyber_pke.encryption_key)
         K_R = self.hash_fn_g((m.tobytes(), h))
         K, R = K_R[:128], K_R[128:]
 
