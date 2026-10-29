@@ -33,7 +33,7 @@ def bit_encode(integers: np.ndarray, d: int) -> np.ndarray:
 
 def bit_decode(bits: np.ndarray, d: int) -> np.ndarray:
     # In FIPS 203, this algorithm outputs integers modulo q.
-    # For simplicity, the modular step was omitted here and implemented
+    # For simplicity, the modulo step was omitted here and implemented
     # downstream instead.
     # TODO: check all downstream usages.
     n, r = divmod(len(bits), d)
@@ -54,3 +54,12 @@ def bits_to_bytes(bits: np.ndarray) -> bytes:
 def bytes_to_bits(data: bytes) -> np.ndarray:
     integers = np.array([data[i] for i in range(0, len(data))])
     return bit_encode(integers, d=8)
+
+
+def bit_reverse(integers: np.ndarray, d: int) -> np.ndarray:
+    """
+    Return integers corresponding to their own bit-reversed representation.
+    """
+    bits = bit_encode(np.flip(integers), d=d)
+    bits = np.flip(bits)
+    return bit_decode(bits, d=d)

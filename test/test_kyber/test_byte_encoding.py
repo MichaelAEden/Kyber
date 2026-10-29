@@ -2,7 +2,13 @@ import unittest
 
 import numpy as np
 
-from kyber.byte_encoding import bit_encode, bit_decode, bits_to_bytes, bytes_to_bits
+from kyber.byte_encoding import (
+    bit_encode,
+    bit_decode,
+    bits_to_bytes,
+    bytes_to_bits,
+    bit_reverse,
+)
 
 
 class TestBitEncode(unittest.TestCase):
@@ -133,3 +139,13 @@ class TestBytesToBits(unittest.TestCase):
         bits_actual = bytes_to_bits(b"\x00\x01\xff")
 
         np.testing.assert_array_equal(bits_expected, bits_actual)
+
+
+class TestBitReverse(unittest.TestCase):
+
+    def test(self):
+        integers = np.array([0, 1, 126, 127])
+        integers_expected = np.array([0, 64, 63, 127])
+        integers_actual = bit_reverse(integers, d=7)
+
+        np.testing.assert_array_equal(integers_expected, integers_actual)
