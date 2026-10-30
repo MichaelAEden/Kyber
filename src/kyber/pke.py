@@ -1,13 +1,12 @@
 import numpy as np
 
 from kyber.byte_encoding import byte_encode
-from kyber.key_gen import random_polynomial_matrix
-from kyber.primitives import hash_g, pseudorandom_function
-from kyber.sampling import sample_ntt, sample_polynomial
+from kyber.key_gen import random_polynomial_matrix, random_polynomial_vector
+from kyber.primitives import hash_g
 from math_.matrix import Matrix
 from math_.modulo import modular_rounding
+from math_.ntt import PolynomialNTT
 from math_.polynomial_ring import Polynomial
-from math_.ntt import PolynomialNTT, ntt
 
 KyberCiphertext = tuple[Matrix[Polynomial], Matrix[Polynomial]]
 
@@ -65,46 +64,17 @@ class KyberPKE:
         rho, sigma = hash_g(d + byte_encode(k, d=8))
 
         # Generate lattice matrix, A.
-        A_ntt = np.zeros((k, k)).tolist()
-        for i in range(k):
-            for j in range(k):
-                A_ntt[i][j] = sample_ntt(
-                    rho + byte_encode(np.array([j, i]), d=8), q=q, n=n
-                )
-        A_ntt = Matrix(A_ntt)
+        A = random_polynomial_matrix(q=q, n=n, k=k, seed=rho)
 
         # Generate secret vector, s.
-        N = 0
-        s_ntt = []
-        for i in range(k):
-            s_ntt.append(
-                ntt(
-                    sample_polynomial(
-                        pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1),
-                        nu=nu1,
-                        q=q,
-                        n=n,
-                    )
-                )
-            )
-            N += 1
-        s_ntt = Matrix.vector(s_ntt, row_vector=False)
+        s = random_polynomial_vector(
+            q=q, n=n, k=k, nu=nu1, seed_int=0, seed_bytes=sigma
+        )
 
         # Generate error vector, e.
-        e_ntt = []
-        for i in range(k):
-            e_ntt.append(
-                ntt(
-                    sample_polynomial(
-                        pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1),
-                        nu=nu1,
-                        q=q,
-                        n=n,
-                    )
-                )
-            )
-            N += 1
-        e_ntt = Matrix.vector(e_ntt, row_vector=False)
+        e = random_polynomial_vector(
+            q=q, n=n, k=k, nu=nu1, seed_int=k, seed_bytes=sigma
+        )
 
         return cls(
             n=n,
@@ -113,9 +83,9 @@ class KyberPKE:
             nu1=nu1,
             nu2=nu2,
             rho=rho,
-            A=A_ntt,
-            s=s_ntt,
-            e=e_ntt,
+            A=A,
+            s=s,
+            e=e,
         )
 
     @property
