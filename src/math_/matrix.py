@@ -47,8 +47,11 @@ class Matrix(Generic[T]):
 
     def transform(self, func: Callable[[T], U]) -> "Matrix[U]":
         return Matrix(
-            (func(self[i, j]) for i in range(self._row_count))
-            for j in range(self._col_count)
+            (
+                (func(self[i, j]) for i in range(self._row_count))
+                for j in range(self._col_count)
+            ),
+            row_major_order=self._row_major_order,
         )
 
     def __iter__(self):

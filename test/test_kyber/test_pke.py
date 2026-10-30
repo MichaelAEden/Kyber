@@ -11,12 +11,9 @@ class TestKyberPKE(unittest.TestCase):
 
     def test_random_values(self):
         q = 3329
-
         n = 256
-        m = np.zeros(n)
-        m[0] = 1
-        m[5] = 1
-        m[10] = 1
+
+        m = b"\x00\x12\x34\x56" * 8
 
         kyber = KyberPKE.from_seed(
             n=n,
@@ -24,13 +21,15 @@ class TestKyberPKE(unittest.TestCase):
             k=3,
             nu1=3,
             nu2=3,
-            d=b"\x00" * 32,
+            du=10,
+            dv=4,
+            seed=b"\x00" * 32,
         )
-        c = kyber._encrypt(m, seed=2027)
+        c = kyber.encrypt(m, seed=b"\x00" * 32)
         m_decrypted = kyber.decrypt(c)
 
-        self.assertEqual((n,), m_decrypted.shape)
-        np.testing.assert_array_equal(m_decrypted, m)
+        self.assertEqual(n // 8, len(m_decrypted))
+        self.assertEqual(m, m_decrypted)
 
     def test_fixed_values(self):
         # See Example 6.2 in the following document:

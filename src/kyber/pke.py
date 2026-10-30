@@ -13,7 +13,7 @@ class KyberPKE:
     """
     Implements Kyber public-key encryption (PKE) scheme, without ciphertext compression.
 
-    See Section 5.1 of FIPS 203.
+    See Section 5 of FIPS 203.
     https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
     """
 
@@ -144,7 +144,7 @@ class KyberPKE:
         e2: Matrix[Polynomial],
     ) -> tuple[Matrix[Polynomial], Matrix[Polynomial]]:
         y_ntt = y.transform(ntt)
-        u = (self.A_ntt.transpose * y_ntt).transform(inverse_ntt) + e1
+        u = (self.A_ntt.transpose * y_ntt).transform(inverse_ntt) + e1.transpose
         mu = Matrix.scalar(
             Polynomial(
                 coef=decompress(bit_decode(m, d=1), d=1, q=self.q),
@@ -152,7 +152,7 @@ class KyberPKE:
                 n=self.n,
             )
         )
-        v = (self.t_ntt.transpose * y_ntt).transform(inverse_ntt) + e2 + mu
+        v = (self.t_ntt * y_ntt).transform(inverse_ntt) + e2 + mu
         return u, v
 
     def decrypt(
