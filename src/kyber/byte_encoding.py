@@ -63,6 +63,10 @@ def byte_encode(integers: Union[int, np.ndarray], d: int) -> bytes:
     return bits_to_bytes(bit_encode(integers, d=d))
 
 
+def byte_decode(data: bytes, d: int) -> np.ndarray:
+    return bit_decode(bytes_to_bits(data), d=d)
+
+
 def bit_reverse(integers: np.ndarray, d: int) -> np.ndarray:
     """
     Return integers corresponding to their own bit-reversed representation.

@@ -3,7 +3,7 @@ from typing import Callable
 
 import numpy as np
 
-from kyber.pke import KyberPKE, KyberCiphertext
+from kyber.pke import KyberPKE
 
 
 def hash_(hash_fn: Callable) -> Callable[[any], bytes]:
@@ -57,7 +57,7 @@ class KyberKEM:
 
         self.z = rng.integers(low=0, high=1, endpoint=True, size=(256,))
 
-    def encapsulate(self, seed: int = None) -> tuple[bytes, KyberCiphertext]:
+    def encapsulate(self, seed: int = None) -> tuple[bytes, bytes]:
         rng = np.random.default_rng(seed)
 
         m = rng.integers(low=0, high=1, endpoint=True, size=(256,)).astype(bool)
@@ -66,18 +66,18 @@ class KyberKEM:
         K_R = self.hash_fn_g((m.tobytes(), h))
         K, R = K_R[:128], K_R[128:]
 
-        c = self.kyber_pke.encrypt(m=m, seed=int.from_bytes(R))
+        c = self.kyber_pke._encrypt(m=m, seed=int.from_bytes(R))
 
         return K, c
 
-    def decapsulate(self, c: KyberCiphertext) -> bytes:
+    def decapsulate(self, c: bytes) -> bytes:
         m = self.kyber_pke.decrypt(c)
 
         h = self.hash_fn_h(self.kyber_pke.encryption_key)
         K_R = self.hash_fn_g((m.tobytes(), h))
         K, R = K_R[:128], K_R[128:]
 
-        c_prime = self.kyber_pke.encrypt(m=m, seed=int.from_bytes(R))
+        c_prime = self.kyber_pke._encrypt(m=m, seed=int.from_bytes(R))
 
         if c != c_prime:
             return self.hash_fn_j((self.z, c))

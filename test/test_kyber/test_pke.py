@@ -26,7 +26,7 @@ class TestKyberPKE(unittest.TestCase):
             nu2=3,
             d=b"\x00" * 32,
         )
-        c = kyber.encrypt(m, seed=2027)
+        c = kyber._encrypt(m, seed=2027)
         m_decrypted = kyber.decrypt(c)
 
         self.assertEqual((n,), m_decrypted.shape)
@@ -46,7 +46,7 @@ class TestKyberPKE(unittest.TestCase):
             nu1=3,
             nu2=3,
             rho=b"\x00" * 32,
-            A=Matrix(
+            A_ntt=Matrix(
                 (
                     (
                         Polynomial(q=q, n=n, coef=np.array([329, 26, 34])),
@@ -65,7 +65,7 @@ class TestKyberPKE(unittest.TestCase):
                     ),
                 )
             ),
-            s=Matrix.vector(
+            s_ntt=Matrix.vector(
                 (
                     Polynomial(q=q, n=n, coef=np.array([1, 0, 3])),
                     Polynomial(q=q, n=n, coef=np.array([1, 1, 0])),
@@ -73,7 +73,7 @@ class TestKyberPKE(unittest.TestCase):
                 ),
                 row_vector=False,
             ),
-            e=Matrix.vector(
+            e_ntt=Matrix.vector(
                 (
                     Polynomial(q=q, n=n, coef=np.array([-2, 3, -1])),
                     Polynomial(q=q, n=n, coef=np.array([1, -1, 2])),
@@ -82,9 +82,9 @@ class TestKyberPKE(unittest.TestCase):
                 row_vector=False,
             ),
         )
-        c = kyber.encrypt(
+        c = kyber._encrypt(
             m=m,
-            r=Matrix.vector(
+            y=Matrix.vector(
                 (
                     Polynomial(q=q, n=n, coef=np.array([-2, -2, 1])),
                     Polynomial(q=q, n=n, coef=np.array([0, 0, 3])),
@@ -106,7 +106,7 @@ class TestKyberPKE(unittest.TestCase):
 
         self.assertEqual((3,), m_decrypted.shape)
         self.assertEqual(
-            kyber.t,
+            kyber.t_ntt,
             Matrix.vector(
                 (
                     Polynomial(q=q, n=n, coef=np.array([274, 180, 257])),
