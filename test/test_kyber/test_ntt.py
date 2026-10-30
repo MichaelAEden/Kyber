@@ -24,7 +24,7 @@ class TestNTT(unittest.TestCase):
         """
         # TODO: consider generalizing algorithm and using examples with
         #  polynomials of smaller degree and smaller coefficients.
-        f_original = sample_polynomial(seed=b"\x02" * 128, nu=2, q=3329)
+        f_original = sample_polynomial(seed=b"\x02" * 128, nu=2, q=3329, n=256)
         f_temp = ntt(f_original)
         f_actual = inverse_ntt(f_temp)
 

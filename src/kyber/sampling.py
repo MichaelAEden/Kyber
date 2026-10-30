@@ -11,7 +11,7 @@ from math_.polynomial_ring import Polynomial
 from math_.ntt import PolynomialNTT
 
 
-def sample_ntt(seed: bytes, q: int) -> PolynomialNTT:
+def sample_ntt(seed: bytes, q: int, n: int) -> PolynomialNTT:
     """
     Sample polynomial coefficients in NTT domain from a uniform distribution.
     """
@@ -19,13 +19,11 @@ def sample_ntt(seed: bytes, q: int) -> PolynomialNTT:
     if len(seed) != seed_length:
         raise ValueError(f"Seed must be {seed_length} bytes.")
 
-    n = 256
-    a = np.zeros(n, dtype=np.uint16)
-
     xof = ExtendableOutputFunction(seed)
 
+    a = np.zeros(n, dtype=np.uint16)
     i = 0
-    while i < 256:
+    while i < n:
         c = xof.squeeze(length=3)
         d1 = c[0] + 256 * (c[1] % 16)
         d2 = c[1] // 16 + 16 * c[2]
@@ -34,14 +32,14 @@ def sample_ntt(seed: bytes, q: int) -> PolynomialNTT:
             a[i] = d1
             i += 1
 
-        if d2 < q and i < 256:
+        if d2 < q and i < n:
             a[i] = d2
             i += 1
 
     return PolynomialNTT(q=q, n=n, coef=a)
 
 
-def sample_polynomial(seed: bytes, nu: int, q: int) -> Polynomial:
+def sample_polynomial(seed: bytes, nu: int, q: int, n: int) -> Polynomial:
     """
     Sample polynomial coefficients from a centered binomial distribution.
     """
@@ -52,7 +50,6 @@ def sample_polynomial(seed: bytes, nu: int, q: int) -> Polynomial:
     if len(seed) != seed_length:
         raise ValueError(f"Seed must be {seed_length} bytes.")
 
-    n = 256
     f = np.zeros(n)
     bits = bytes_to_bits(seed)
     for i in range(n):

@@ -68,7 +68,9 @@ class KyberPKE:
         A_ntt = np.zeros((k, k)).tolist()
         for i in range(k):
             for j in range(k):
-                A_ntt[i][j] = sample_ntt(rho + byte_encode(np.array([j, i]), d=8), q=q)
+                A_ntt[i][j] = sample_ntt(
+                    rho + byte_encode(np.array([j, i]), d=8), q=q, n=n
+                )
         A_ntt = Matrix(A_ntt)
 
         # Generate secret vector, s.
@@ -81,6 +83,7 @@ class KyberPKE:
                         pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1),
                         nu=nu1,
                         q=q,
+                        n=n,
                     )
                 )
             )
@@ -96,6 +99,7 @@ class KyberPKE:
                         pseudorandom_function(sigma, byte_encode(N, d=8), nu=nu1),
                         nu=nu1,
                         q=q,
+                        n=n,
                     )
                 )
             )
