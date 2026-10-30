@@ -92,20 +92,38 @@ class PolynomialNTT:
 
     def __post_init__(self):
         if len(self.coef) != self.n:
-            raise ValueError("Polynomial coefficients must have length n.")
+            raise ValueError(f"Polynomial coefficients must have length n={self.n}.")
+        if np.any(self.coef >= self.q):
+            raise ValueError(f"Polynomial coefficients must be less than q={self.q}.")
 
-    def __eq__(self, other: "PolynomialNTT") -> bool:
+    def _check_compatibility(self, other):
+        if not isinstance(other, PolynomialNTT):
+            raise TypeError(
+                f"Cannot perform operation between PolynomialNTT and {type(other)}."
+            )
+        if self.q != other.q:
+            raise ValueError("Polynomials must have same q.")
+        if self.n != other.n:
+            raise ValueError("Polynomials must have same n.")
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, PolynomialNTT):
+            return False
+
         return (
             self.q == other.q
             and self.n == other.n
             and np.array_equal(self.coef, other.coef)
         )
 
-    def __mul__(self, other: "PolynomialNTT") -> "PolynomialNTT":
+    def __mul__(self, other) -> "PolynomialNTT":
+        self._check_compatibility(other)
         return ntt(inverse_ntt(self) * inverse_ntt(other))
 
-    def __add__(self, other: "PolynomialNTT") -> "PolynomialNTT":
+    def __add__(self, other) -> "PolynomialNTT":
+        self._check_compatibility(other)
         return ntt(inverse_ntt(self) + inverse_ntt(other))
 
-    def __sub__(self, other: "PolynomialNTT") -> "PolynomialNTT":
+    def __sub__(self, other) -> "PolynomialNTT":
+        self._check_compatibility(other)
         return ntt(inverse_ntt(self) - inverse_ntt(other))

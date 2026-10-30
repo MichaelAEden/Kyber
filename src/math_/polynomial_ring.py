@@ -27,9 +27,15 @@ class Polynomial:
 
     def __post_init__(self):
         if len(self.coef) != self.n:
-            raise ValueError("Polynomial coefficients must have length n.")
+            raise ValueError(f"Polynomial coefficients must have length n={self.n}.")
+        if np.any(self.coef >= self.q):
+            raise ValueError(f"Polynomial coefficients must be less than q={self.q}.")
 
-    def _check_compatibility(self, other: "Polynomial"):
+    def _check_compatibility(self, other):
+        if not isinstance(other, Polynomial):
+            raise TypeError(
+                f"Cannot perform operation between Polynomial and {type(other)}."
+            )
         if self.q != other.q:
             raise ValueError("Polynomials must have same q.")
         if self.n != other.n:
@@ -40,14 +46,17 @@ class Polynomial:
         # TODO: set PYTHONHASHSEED for consistent hashing behaviour.
         return hash((self.q, self.n, self.coef.tobytes()))
 
-    def __eq__(self, other: "Polynomial") -> bool:
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Polynomial):
+            return False
+
         return (
             self.q == other.q
             and self.n == other.n
             and np.array_equal(self.coef, other.coef)
         )
 
-    def __mul__(self, other: "Polynomial") -> "Polynomial":
+    def __mul__(self, other) -> "Polynomial":
         self._check_compatibility(other)
 
         a = np.mod(anti_circulant(self.coef), self.q)
@@ -58,7 +67,7 @@ class Polynomial:
 
         return Polynomial(q=self.q, n=self.n, coef=c)
 
-    def __add__(self, other: "Polynomial") -> "Polynomial":
+    def __add__(self, other) -> "Polynomial":
         self._check_compatibility(other)
 
         x = self.coef + other.coef
@@ -66,7 +75,7 @@ class Polynomial:
 
         return Polynomial(q=self.q, n=self.n, coef=x)
 
-    def __sub__(self, other: "Polynomial") -> "Polynomial":
+    def __sub__(self, other) -> "Polynomial":
         self._check_compatibility(other)
 
         x = self.coef - other.coef
