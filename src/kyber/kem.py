@@ -51,7 +51,7 @@ class KyberKEM:
             k=k,
             nu1=nu1,
             nu2=nu2,
-            d=seed,
+            seed=seed,
         )
         rng = np.random.default_rng(seed=2026)
 

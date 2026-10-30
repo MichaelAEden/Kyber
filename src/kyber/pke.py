@@ -5,7 +5,6 @@ from kyber.compression import decompress, compress
 from kyber.key_gen import random_polynomial_matrix_ntt, random_polynomial_vector
 from kyber.primitives import hash_g
 from math_.matrix import Matrix
-from math_.modulo import modular_rounding
 from math_.ntt import PolynomialNTT, inverse_ntt, ntt
 from math_.polynomial_ring import Polynomial
 
@@ -65,9 +64,11 @@ class KyberPKE:
         k: int,
         nu1: int,
         nu2: int,
-        d: bytes,
+        du: int,
+        dv: int,
+        seed: bytes,
     ):
-        rho, sigma = hash_g(d + byte_encode(k, d=8))
+        rho, sigma = hash_g(seed + byte_encode(k, d=8))
 
         # Generate lattice matrix, A.
         A_ntt = random_polynomial_matrix_ntt(q=q, n=n, k=k, seed=rho)
@@ -88,6 +89,8 @@ class KyberPKE:
             k=k,
             nu1=nu1,
             nu2=nu2,
+            du=du,
+            dv=dv,
             rho=rho,
             A_ntt=A_ntt,
             s_ntt=s_ntt,
@@ -129,7 +132,7 @@ class KyberPKE:
                 d=self.dv,
                 q=self.q,
             ),
-            d=self.du,
+            d=self.dv,
         )
         return c1 + c2
 
@@ -155,7 +158,44 @@ class KyberPKE:
     def decrypt(
         self,
         c: bytes,
+    ) -> bytes:
+        i = 32 * self.du * self.k
+        c1, c2 = c[:i], c[i:]
+
+        # Obtain u, v from raw ciphertext.
+        u_coef = decompress(
+            byte_decode(c1, d=self.du),
+            d=self.du,
+            q=self.q,
+        )
+        u = Matrix.vector(
+            Polynomial(
+                coef=u_coef[i * self.n : (i + 1) * self.n],
+                q=self.q,
+                n=self.n,
+            )
+            for i in range(self.k)
+        )
+        v_coef = decompress(
+            byte_decode(c2, d=self.dv),
+            d=self.dv,
+            q=self.q,
+        )
+        v = Matrix.scalar(
+            Polynomial(
+                coef=v_coef,
+                q=self.q,
+                n=self.n,
+            )
+        )
+
+        return byte_encode(self._decrypt(u=u, v=v), d=1)
+
+    def _decrypt(
+        self,
+        u: Matrix[Polynomial],
+        v: Matrix[Polynomial],
     ) -> np.ndarray:
-        u, v = c
-        m = modular_rounding((v - self.s_ntt.transpose * u)[0, 0].coef, q=self.q)
-        return m.astype(bool).flatten()
+        w = v - (self.s_ntt.transpose * u.transform(ntt)).transform(inverse_ntt)
+        w_coef = np.concatenate([p.coef for p in w])
+        return compress(w_coef, d=1, q=self.q)
