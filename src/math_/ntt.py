@@ -122,8 +122,16 @@ class PolynomialNTT:
 
     def __add__(self, other) -> "PolynomialNTT":
         self._check_compatibility(other)
-        return ntt(inverse_ntt(self) + inverse_ntt(other))
+
+        x = self.coef + other.coef
+        x = np.mod(x, self.q)
+
+        return PolynomialNTT(q=self.q, n=self.n, coef=x)
 
     def __sub__(self, other) -> "PolynomialNTT":
         self._check_compatibility(other)
-        return ntt(inverse_ntt(self) - inverse_ntt(other))
+
+        x = self.coef - other.coef
+        x = np.mod(x, self.q)
+
+        return PolynomialNTT(q=self.q, n=self.n, coef=x)
