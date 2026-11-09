@@ -18,9 +18,9 @@ class TestKyberPKE(unittest.TestCase):
         kyber = KyberPKE.from_seed(
             n=n,
             q=q,
-            k=3,
+            k=2,
             nu1=3,
-            nu2=3,
+            nu2=2,
             du=10,
             dv=4,
             seed=b"\x00" * 32,
