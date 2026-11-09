@@ -11,12 +11,21 @@ from kyber.byte_encoding import bit_reverse
 from math_.polynomial_ring import Polynomial
 
 
-def compute_zeta_values():
+def get_zeta_values_for_ntt():
     # TODO: replace with Appendix A or cache.
     q = 3329
     n = 128
     zeta = 17
     powers = bit_reverse(np.arange(n), d=7)
+    return np.array([pow(zeta, int(p), q) for p in powers])
+
+
+def get_zeta_values_for_ntt_mul():
+    # TODO: replace with Appendix A or cache.
+    q = 3329
+    n = 128
+    zeta = 17
+    powers = 2 * bit_reverse(np.arange(n), d=7) + 1
     return np.array([pow(zeta, int(p), q) for p in powers])
 
 
@@ -29,7 +38,7 @@ def ntt(p: Polynomial) -> "PolynomialNTT":
         raise ValueError(f"NTT only implemented for q={q}, n={n}.")
 
     f = np.copy(p.coef)
-    zeta_values = compute_zeta_values()
+    zeta_values = get_zeta_values_for_ntt()
 
     i = 1
     length = 128
@@ -59,7 +68,7 @@ def inverse_ntt(p: "PolynomialNTT") -> Polynomial:
         raise ValueError(f"NTT only implemented for q={q}, n={n}.")
 
     f = np.copy(p.coef)
-    zeta_values = compute_zeta_values()
+    zeta_values = get_zeta_values_for_ntt()
 
     i = 127
     length = 2
@@ -79,6 +88,14 @@ def inverse_ntt(p: "PolynomialNTT") -> Polynomial:
     f = (f * 3303) % q
 
     return Polynomial(q=q, n=n, coef=f)
+
+
+def _base_case_multiply(
+    a0: int, a1: int, b0: int, b1: int, gamma: int, q: int
+) -> tuple[int, int]:
+    c0 = (a0 * b0 + a1 * b1 * gamma) % q
+    c1 = (a0 * b1 + a1 * b0) % q
+    return c0, c1
 
 
 @dataclass(frozen=True)
@@ -118,7 +135,30 @@ class PolynomialNTT:
 
     def __mul__(self, other) -> "PolynomialNTT":
         self._check_compatibility(other)
-        return ntt(inverse_ntt(self) * inverse_ntt(other))
+
+        n = 256
+        if self.n != n:
+            raise ValueError(f"Multiplication only supported for n = {n}")
+
+        zeta_values = get_zeta_values_for_ntt_mul()
+        f = self.coef
+        g = other.coef
+        h = np.zeros_like(self.coef)
+        for i in range(128):
+            h[2 * i], h[2 * i + 1] = _base_case_multiply(
+                int(f[2 * i]),
+                int(f[2 * i + 1]),
+                int(g[2 * i]),
+                int(g[2 * i + 1]),
+                gamma=int(zeta_values[i]),
+                q=self.q,
+            )
+
+        return PolynomialNTT(
+            q=self.q,
+            n=self.n,
+            coef=h,
+        )
 
     def __add__(self, other) -> "PolynomialNTT":
         self._check_compatibility(other)
