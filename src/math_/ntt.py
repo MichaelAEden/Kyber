@@ -17,7 +17,7 @@ def get_zeta_values_for_ntt():
     n = 128
     zeta = 17
     powers = bit_reverse(np.arange(n), d=7)
-    return np.array([pow(zeta, int(p), q) for p in powers])
+    return np.array([pow(zeta, int(p), q) for p in powers], dtype=np.uint16)
 
 
 def get_zeta_values_for_ntt_mul():
@@ -26,7 +26,7 @@ def get_zeta_values_for_ntt_mul():
     n = 128
     zeta = 17
     powers = 2 * bit_reverse(np.arange(n), d=7) + 1
-    return np.array([pow(zeta, int(p), q) for p in powers])
+    return np.array([pow(zeta, int(p), q) for p in powers], dtype=np.uint16)
 
 
 def ntt(p: Polynomial) -> "PolynomialNTT":
@@ -37,7 +37,7 @@ def ntt(p: Polynomial) -> "PolynomialNTT":
     if p.q != q or p.n != n:
         raise ValueError(f"NTT only implemented for q={q}, n={n}.")
 
-    f = np.copy(p.coef)
+    f = np.astype(p.coef, np.int16)
     zeta_values = get_zeta_values_for_ntt()
 
     i = 1
@@ -56,7 +56,7 @@ def ntt(p: Polynomial) -> "PolynomialNTT":
             start = start + 2 * length
         length = length // 2
 
-    return PolynomialNTT(q=q, n=n, coef=f)
+    return PolynomialNTT(q=q, n=n, coef=f.astype(np.uint16))
 
 
 def inverse_ntt(p: "PolynomialNTT") -> Polynomial:
@@ -67,7 +67,7 @@ def inverse_ntt(p: "PolynomialNTT") -> Polynomial:
     if p.q != q or p.n != n:
         raise ValueError(f"NTT only implemented for q={q}, n={n}.")
 
-    f = np.copy(p.coef)
+    f = np.astype(p.coef, np.int16)
     zeta_values = get_zeta_values_for_ntt()
 
     i = 127
@@ -85,9 +85,9 @@ def inverse_ntt(p: "PolynomialNTT") -> Polynomial:
                 j += 1
             start = start + 2 * length
         length = length * 2
-    f = (f * 3303) % q
+    f = (f.astype(np.int64) * 3303) % q
 
-    return Polynomial(q=q, n=n, coef=f)
+    return Polynomial(q=q, n=n, coef=f.astype(np.uint16))
 
 
 def _base_case_multiply(
@@ -110,6 +110,8 @@ class PolynomialNTT:
     def __post_init__(self):
         if len(self.coef) != self.n:
             raise ValueError(f"Polynomial coefficients must have length n={self.n}.")
+        if self.coef.dtype != np.uint16:
+            raise ValueError(f"Polynomial coefficients must be uint16.")
         if np.any(self.coef >= self.q):
             raise ValueError(f"Polynomial coefficients must be less than q={self.q}.")
 
@@ -171,7 +173,7 @@ class PolynomialNTT:
     def __sub__(self, other) -> "PolynomialNTT":
         self._check_compatibility(other)
 
-        x = self.coef - other.coef
-        x = np.mod(x, self.q)
+        x = self.coef - other.coef.astype(np.int16)
+        x = np.mod(x, self.q).astype(np.uint16)
 
         return PolynomialNTT(q=self.q, n=self.n, coef=x)

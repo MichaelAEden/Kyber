@@ -26,18 +26,20 @@ class TestPolynomialRing(unittest.TestCase):
     def test_multiplication(self):
         q = 43
         n = 4
-        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12], dtype=np.uint16))
+        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14], dtype=np.uint16))
 
         h = f * g
 
         self.assertEqual(q, h.q)
         self.assertEqual(n, h.n)
-        np.testing.assert_array_equal(np.array([19, 3, 10, 21]), h.coef)
+        np.testing.assert_array_equal(
+            np.array([19, 3, 10, 21], dtype=np.uint16), h.coef
+        )
 
     def test_multiplication_incompatible(self):
-        f = Polynomial(q=43, n=4, coef=np.array([33, 41, 0, 12]))
-        g = Polynomial(q=47, n=4, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=43, n=4, coef=np.array([33, 41, 0, 12], dtype=np.uint16))
+        g = Polynomial(q=47, n=4, coef=np.array([2, 17, 39, 14], dtype=np.uint16))
 
         with self.assertRaises(ValueError):
             f * g
@@ -45,39 +47,43 @@ class TestPolynomialRing(unittest.TestCase):
     def test_addition(self):
         q = 43
         n = 4
-        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12], dtype=np.uint16))
+        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14], dtype=np.uint16))
 
         h = f + g
 
         self.assertEqual(q, h.q)
         self.assertEqual(n, h.n)
-        np.testing.assert_array_equal(np.array([35, 15, 39, 26]), h.coef)
+        np.testing.assert_array_equal(
+            np.array([35, 15, 39, 26], dtype=np.uint16), h.coef
+        )
 
     def test_subtraction(self):
         q = 43
         n = 4
-        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12], dtype=np.uint16))
+        g = Polynomial(q=q, n=n, coef=np.array([2, 17, 39, 14], dtype=np.uint16))
 
         h = f - g
 
         self.assertEqual(q, h.q)
         self.assertEqual(n, h.n)
-        np.testing.assert_array_equal(np.array([31, 24, 4, 41]), h.coef)
+        np.testing.assert_array_equal(
+            np.array([31, 24, 4, 41], dtype=np.uint16), h.coef
+        )
 
     def test_equal(self):
         q = 43
         n = 4
-        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12], dtype=np.uint16))
+        g = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12], dtype=np.uint16))
 
         self.assertEqual(f, g)
 
     def test_not_equal(self):
         q = 43
         n = 4
-        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12]))
-        g = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 0]))
+        f = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 12], dtype=np.uint16))
+        g = Polynomial(q=q, n=n, coef=np.array([33, 41, 0, 0], dtype=np.uint16))
 
         self.assertNotEqual(f, g)

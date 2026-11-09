@@ -28,6 +28,8 @@ class Polynomial:
     def __post_init__(self):
         if len(self.coef) != self.n:
             raise ValueError(f"Polynomial coefficients must have length n={self.n}.")
+        if self.coef.dtype != np.uint16:
+            raise ValueError(f"Polynomial coefficients must be uint16.")
         if np.any(self.coef >= self.q):
             raise ValueError(f"Polynomial coefficients must be less than q={self.q}.")
 
@@ -59,11 +61,11 @@ class Polynomial:
     def __mul__(self, other) -> "Polynomial":
         self._check_compatibility(other)
 
-        a = np.mod(anti_circulant(self.coef), self.q)
-        b = other.coef.reshape((self.n, 1))
+        a = np.mod(anti_circulant(self.coef).astype(np.int64), self.q)
+        b = other.coef.astype(np.int64).reshape((self.n, 1))
 
         c = np.matmul(a, b).reshape((self.n,))
-        c = np.mod(c, self.q)
+        c = np.mod(c, self.q).astype(np.uint16)
 
         return Polynomial(q=self.q, n=self.n, coef=c)
 
@@ -78,7 +80,7 @@ class Polynomial:
     def __sub__(self, other) -> "Polynomial":
         self._check_compatibility(other)
 
-        x = self.coef - other.coef
-        x = np.mod(x, self.q)
+        x = self.coef - other.coef.astype(np.int16)
+        x = np.mod(x, self.q).astype(np.uint16)
 
         return Polynomial(q=self.q, n=self.n, coef=x)

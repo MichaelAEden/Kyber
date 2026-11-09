@@ -30,6 +30,7 @@ def compress(x: np.ndarray, d: int, q: int) -> np.ndarray:
         raise ValueError(f"d must be less than {q_bits} bits for modular base: {q}")
 
     p = 1 << d
+    x = np.asarray(x, dtype=np.int64)
     return np.mod(round_fraction(numerator=p * x, denominator=q), p)
 
 
@@ -39,4 +40,5 @@ def decompress(y: np.ndarray, d: int, q: int) -> np.ndarray:
         raise ValueError(f"d must be less than {q_bits} bits for modular base: {q}")
 
     p = 1 << d
+    y = np.asarray(y, dtype=np.int64)
     return round_fraction(numerator=q * y, denominator=p)

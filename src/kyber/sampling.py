@@ -50,7 +50,7 @@ def sample_polynomial(seed: bytes, nu: int, q: int, n: int) -> Polynomial:
     if len(seed) != seed_length:
         raise ValueError(f"Seed must be {seed_length} bytes.")
 
-    f = np.zeros(n)
+    f = np.zeros(n, dtype=np.uint16)
     bits = bytes_to_bits(seed)
     for i in range(n):
         x = sum(bits[2 * i * nu + j] for j in range(nu))

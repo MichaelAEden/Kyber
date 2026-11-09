@@ -147,7 +147,7 @@ class KyberPKE:
         u = (self.A_ntt.transpose * y_ntt).transform(inverse_ntt) + e1.transpose
         mu = Matrix.scalar(
             Polynomial(
-                coef=decompress(bit_decode(m, d=1), d=1, q=self.q),
+                coef=decompress(bit_decode(m, d=1), d=1, q=self.q).astype(np.uint16),
                 q=self.q,
                 n=self.n,
             )
@@ -167,7 +167,7 @@ class KyberPKE:
             byte_decode(c1, d=self.du),
             d=self.du,
             q=self.q,
-        )
+        ).astype(np.uint16)
         u = Matrix.vector(
             Polynomial(
                 coef=u_coef[i * self.n : (i + 1) * self.n],
@@ -180,7 +180,7 @@ class KyberPKE:
             byte_decode(c2, d=self.dv),
             d=self.dv,
             q=self.q,
-        )
+        ).astype(np.uint16)
         v = Matrix.scalar(
             Polynomial(
                 coef=v_coef,
