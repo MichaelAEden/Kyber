@@ -25,7 +25,7 @@ class TestKyberPKE(unittest.TestCase):
             dv=4,
             seed=b"\x00" * 32,
         )
-        c = kyber.encrypt(m, seed=b"\x00" * 32)
+        c = kyber.encrypt(m, r=b"\x00" * 32)
         m_decrypted = kyber.decrypt(c)
 
         self.assertEqual(n // 8, len(m_decrypted))

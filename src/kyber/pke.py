@@ -11,7 +11,7 @@ from math_.polynomial_ring import Polynomial
 
 class KyberPKE:
     """
-    Implements Kyber public-key encryption (PKE) scheme, without ciphertext compression.
+    Implements Kyber public-key encryption (PKE) scheme.
 
     See Section 5 of FIPS 203.
     https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
@@ -107,15 +107,15 @@ class KyberPKE:
         coefs = np.concatenate([p.coef for p in self.s_ntt])
         return byte_encode(coefs, d=12)
 
-    def encrypt(self, m: bytes, seed: bytes) -> bytes:
+    def encrypt(self, m: bytes, r: bytes) -> bytes:
         y = random_polynomial_vector(
-            q=self.q, n=self.n, k=self.k, nu=self.nu1, seed_int=0, seed_bytes=seed
+            q=self.q, n=self.n, k=self.k, nu=self.nu1, seed_int=0, seed_bytes=r
         )
         e1 = random_polynomial_vector(
-            q=self.q, n=self.n, k=self.k, nu=self.nu2, seed_int=self.k, seed_bytes=seed
+            q=self.q, n=self.n, k=self.k, nu=self.nu2, seed_int=self.k, seed_bytes=r
         )
         e2 = random_polynomial_vector(
-            q=self.q, n=self.n, k=1, nu=self.nu2, seed_int=self.k * 2, seed_bytes=seed
+            q=self.q, n=self.n, k=1, nu=self.nu2, seed_int=self.k * 2, seed_bytes=r
         )
         u, v = self._encrypt(m=bytes_to_bits(m), y=y, e1=e1, e2=e2)
         c1 = byte_encode(
