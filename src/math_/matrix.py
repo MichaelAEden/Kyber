@@ -91,8 +91,11 @@ class Matrix(Generic[T]):
         self, other: "Matrix[T]", func: Callable
     ) -> "Matrix[T]":
         return Matrix(
-            (func(self[i, j], other[i, j]) for i in range(self._row_count))
-            for j in range(self._col_count)
+            (
+                (func(self[i, j], other[i, j]) for i in range(self._row_count))
+                for j in range(self._col_count)
+            ),
+            row_major_order=self._row_major_order,
         )
 
     def __add__(self, other: "Matrix[T]") -> "Matrix[T]":
