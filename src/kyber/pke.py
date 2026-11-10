@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import numpy as np
 
 from kyber.byte_encoding import byte_encode, byte_decode, bit_decode, bytes_to_bits
@@ -9,47 +11,34 @@ from math_.ntt import PolynomialNTT, inverse_ntt, ntt
 from math_.polynomial_ring import Polynomial
 
 
+@dataclass(frozen=True)
 class KyberPKE:
     """
     Implements Kyber public-key encryption (PKE) scheme.
 
     See Section 5 of FIPS 203.
     https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
+
+    :param n: Degree of reduction polynomial.
+    :param q: Prime modulus.
+    :param k: Dimensions of lattice matrix.
+    :param nu1: Coefficient bound for s, e, r.
+    :param nu2: Coefficient bound for e1, e2.
+    :param du: Coefficient for compression of u in ciphertext.
+    :param dv: Coefficient for compression of v in ciphertext.
+    :param ek: Encryption key (384 * 𝑘 + 32 bytes).
+    :param dk: Decryption key (384 * 𝑘 bytes).
     """
 
-    def __init__(
-        self,
-        n: int,
-        q: int,
-        k: int,
-        nu1: int,
-        nu2: int,
-        du: int,
-        dv: int,
-        ek: bytes,
-        dk: bytes,
-    ):
-        """
-        :param n: Degree of reduction polynomial.
-        :param q: Prime modulus.
-        :param k: Dimensions of lattice matrix.
-        :param nu1: Coefficient bound for s, e, r.
-        :param nu2: Coefficient bound for e1, e2.
-        :param du: Coefficient for compression of u in ciphertext.
-        :param dv: Coefficient for compression of v in ciphertext.
-        :param ek: Encryption key (384 * 𝑘 + 32 bytes).
-        :param dk: Decryption key (384 * 𝑘 bytes).
-        """
-        self.n = n
-        self.q = q
-        self.k = k
-        self.nu1 = nu1
-        self.nu2 = nu2
-        self.du = du
-        self.dv = dv
-
-        self.ek = ek
-        self.dk = dk
+    n: int
+    q: int
+    k: int
+    nu1: int
+    nu2: int
+    du: int
+    dv: int
+    ek: bytes
+    dk: bytes
 
     @classmethod
     def from_seed(

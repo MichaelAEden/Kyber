@@ -18,11 +18,14 @@ def anti_circulant(x: np.ndarray) -> np.ndarray:
 
 @dataclass(frozen=True)
 class Polynomial:
-    # Maximum value for polynomial coefficient.
+    """
+    :param q: Maximum value for polynomial coefficient.
+    :param n: Degree of reduction polynomial.
+    :param coef: Polynomial coefficients in order of ascending degree.
+    """
+
     q: int
-    # Degree of reduction polynomial.
     n: int
-    # Polynomial coefficients in order of ascending degree.
     coef: np.ndarray
 
     def __post_init__(self):

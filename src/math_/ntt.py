@@ -100,11 +100,14 @@ def _base_case_multiply(
 
 @dataclass(frozen=True)
 class PolynomialNTT:
-    # Maximum value for polynomial coefficient.
+    """
+    :param q: Maximum value for polynomial coefficient.
+    :param n: Degree of reduction polynomial.
+    :param coef: Polynomial coefficients in order of ascending degree.
+    """
+
     q: int
-    # Degree of reduction polynomial.
     n: int
-    # Polynomial coefficients in order of ascending degree.
     coef: np.ndarray
 
     def __post_init__(self):
