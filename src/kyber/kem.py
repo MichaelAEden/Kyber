@@ -31,8 +31,8 @@ class KyberKEM:
         :param dv: Coefficient for compression of v in ciphertext.
         :param seed: Seed for RNG.
         """
-        if n != 256:
-            raise ValueError("Only n = 256 is supported.")
+        if n != 256 or q != 3329:
+            raise ValueError("Only n = 256, q = 3329 is supported.")
 
         self.kyber_pke = KyberPKE.from_seed(
             n=n,
@@ -42,6 +42,54 @@ class KyberKEM:
             nu2=nu2,
             du=du,
             dv=dv,
+            seed=seed,
+        )
+
+    @classmethod
+    def ml_kem_512(
+        cls,
+        seed: bytes,
+    ) -> "KyberKEM":
+        return cls(
+            n=256,
+            q=3329,
+            k=2,
+            nu1=3,
+            nu2=2,
+            du=10,
+            dv=4,
+            seed=seed,
+        )
+
+    @classmethod
+    def ml_kem_768(
+        cls,
+        seed: bytes,
+    ) -> "KyberKEM":
+        return cls(
+            n=256,
+            q=3329,
+            k=3,
+            nu1=2,
+            nu2=2,
+            du=10,
+            dv=4,
+            seed=seed,
+        )
+
+    @classmethod
+    def ml_kem_1024(
+        cls,
+        seed: bytes,
+    ) -> "KyberKEM":
+        return cls(
+            n=256,
+            q=3329,
+            k=4,
+            nu1=2,
+            nu2=2,
+            du=11,
+            dv=5,
             seed=seed,
         )
 
