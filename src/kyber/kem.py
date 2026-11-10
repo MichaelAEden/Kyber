@@ -46,7 +46,7 @@ class KyberKEM:
         )
 
     def encapsulate(self, m: bytes) -> tuple[bytes, bytes]:
-        h = hash_h(self.kyber_pke.encryption_key)
+        h = hash_h(self.kyber_pke.ek)
         K, r = hash_g(m + h)
 
         c = self.kyber_pke.encrypt(m, r)
@@ -56,7 +56,7 @@ class KyberKEM:
     def decapsulate(self, c: bytes) -> bytes:
         m = self.kyber_pke.decrypt(c)
 
-        h = hash_h(self.kyber_pke.encryption_key)
+        h = hash_h(self.kyber_pke.ek)
         K, r = hash_g(m + h)
 
         c_prime = self.kyber_pke.encrypt(m, r)

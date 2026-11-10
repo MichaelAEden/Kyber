@@ -26,10 +26,8 @@ class KyberPKE:
         nu2: int,
         du: int,
         dv: int,
-        rho: bytes,
-        A_ntt: Matrix[PolynomialNTT],
-        s_ntt: Matrix[PolynomialNTT],
-        e_ntt: Matrix[PolynomialNTT],
+        ek: bytes,
+        dk: bytes,
     ):
         """
         :param n: Degree of reduction polynomial.
@@ -39,9 +37,9 @@ class KyberPKE:
         :param nu2: Coefficient bound for e1, e2.
         :param du: Coefficient for compression of u in ciphertext.
         :param dv: Coefficient for compression of v in ciphertext.
-        :param rho: Seed for randomness.
+        :param ek: Encryption key (384 * 𝑘 + 32 bytes).
+        :param dk: Decryption key (384 * 𝑘 bytes).
         """
-        # Parameters
         self.n = n
         self.q = q
         self.k = k
@@ -49,12 +47,9 @@ class KyberPKE:
         self.nu2 = nu2
         self.du = du
         self.dv = dv
-        self.rho = rho
 
-        # Encryption, decryption keys.
-        self.A_ntt = A_ntt
-        self.s_ntt = s_ntt
-        self.t_ntt = self.A_ntt * self.s_ntt + e_ntt
+        self.ek = ek
+        self.dk = dk
 
     @classmethod
     def from_seed(
@@ -83,6 +78,13 @@ class KyberPKE:
             q=q, n=n, k=k, nu=nu1, seed_int=k, seed_bytes=sigma
         ).transform(ntt)
 
+        # Generate vector, t.
+        t_ntt = A_ntt * s_ntt + e_ntt
+
+        # Generate encryption, decryption keys.
+        ek = byte_encode(np.concatenate([p.coef for p in t_ntt]), d=12) + rho
+        dk = byte_encode(np.concatenate([p.coef for p in s_ntt]), d=12)
+
         return cls(
             n=n,
             q=q,
@@ -91,21 +93,48 @@ class KyberPKE:
             nu2=nu2,
             du=du,
             dv=dv,
-            rho=rho,
-            A_ntt=A_ntt,
-            s_ntt=s_ntt,
-            e_ntt=e_ntt,
+            ek=ek,
+            dk=dk,
         )
 
-    @property
-    def encryption_key(self) -> bytes:
-        coefs = np.concatenate([p.coef for p in self.t_ntt])
-        return byte_encode(coefs, d=12) + self.rho
+    def deserialize_encryption_key(
+        self,
+    ) -> tuple[Matrix[PolynomialNTT], Matrix[PolynomialNTT]]:
+        bits_per_coef = 12
+        bytes_per_polynomial = (bits_per_coef * self.n) // 8
+        i = bytes_per_polynomial * self.k
+        t_ntt_coefs_bytes, rho = self.ek[:i], self.ek[i:]
+        t_ntt = Matrix.vector(
+            PolynomialNTT(
+                q=self.q,
+                n=self.n,
+                coef=byte_decode(
+                    t_ntt_coefs_bytes[
+                        i * bytes_per_polynomial : (i + 1) * bytes_per_polynomial
+                    ],
+                    d=12,
+                ),
+            )
+            for i in range(self.k)
+        )
+        A_ntt = random_polynomial_matrix_ntt(q=self.q, n=self.n, k=self.k, seed=rho)
+        return A_ntt, t_ntt
 
-    @property
-    def decryption_key(self) -> bytes:
-        coefs = np.concatenate([p.coef for p in self.s_ntt])
-        return byte_encode(coefs, d=12)
+    def deserialize_decryption_key(self) -> Matrix[PolynomialNTT]:
+        bits_per_coef = 12
+        bytes_per_polynomial = (bits_per_coef * self.n) // 8
+        s_ntt = Matrix.vector(
+            PolynomialNTT(
+                q=self.q,
+                n=self.n,
+                coef=byte_decode(
+                    self.dk[i * bytes_per_polynomial : (i + 1) * bytes_per_polynomial],
+                    d=12,
+                ),
+            )
+            for i in range(self.k)
+        )
+        return s_ntt
 
     def encrypt(self, m: bytes, r: bytes) -> bytes:
         y = random_polynomial_vector(
@@ -143,8 +172,9 @@ class KyberPKE:
         e1: Matrix[Polynomial],
         e2: Matrix[Polynomial],
     ) -> tuple[Matrix[Polynomial], Matrix[Polynomial]]:
+        A_ntt, t_ntt = self.deserialize_encryption_key()
         y_ntt = y.transform(ntt)
-        u = (self.A_ntt.transpose * y_ntt).transform(inverse_ntt) + e1.transpose
+        u = (A_ntt.transpose * y_ntt).transform(inverse_ntt) + e1.transpose
         mu = Matrix.scalar(
             Polynomial(
                 coef=decompress(bit_decode(m, d=1), d=1, q=self.q).astype(np.uint16),
@@ -152,7 +182,7 @@ class KyberPKE:
                 n=self.n,
             )
         )
-        v = (self.t_ntt * y_ntt).transform(inverse_ntt) + e2 + mu
+        v = (t_ntt * y_ntt).transform(inverse_ntt) + e2 + mu
         return u, v
 
     def decrypt(
@@ -189,13 +219,16 @@ class KyberPKE:
             )
         )
 
-        return byte_encode(self._decrypt(u=u, v=v), d=1)
+        s_ntt = self.deserialize_decryption_key()
+
+        return byte_encode(self._decrypt(s_ntt=s_ntt, u=u, v=v), d=1)
 
     def _decrypt(
         self,
+        s_ntt: Matrix[PolynomialNTT],
         u: Matrix[Polynomial],
         v: Matrix[Polynomial],
     ) -> np.ndarray:
-        w = v - (self.s_ntt.transpose * u.transform(ntt)).transform(inverse_ntt)
+        w = v - (s_ntt * u.transform(ntt)).transform(inverse_ntt)
         w_coef = np.concatenate([p.coef for p in w])
         return compress(w_coef, d=1, q=self.q)
